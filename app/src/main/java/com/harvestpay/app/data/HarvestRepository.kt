@@ -10,6 +10,7 @@ class HarvestRepository(private val database: AppDatabase) {
     val workEntries = dao.observeWorkEntries()
     val payments = dao.observePayments()
     val reminders = dao.observeReminders()
+    val workTypes = dao.observeWorkTypes()
 
     suspend fun mobileExists(mobile: String, excludingId: Long = 0) =
         dao.mobileExists(mobile, excludingId)
@@ -37,6 +38,29 @@ class HarvestRepository(private val database: AppDatabase) {
     }
 
     suspend fun deleteWorkEntry(workEntry: WorkEntryEntity) = dao.deleteWorkEntry(workEntry)
+
+    suspend fun workTypeNameExists(name: String, excludingId: Long = 0) =
+        dao.workTypeNameExists(name, excludingId)
+
+    suspend fun saveWorkType(workType: WorkTypeEntity): Long {
+        if (workType.id == 0L) return dao.insertWorkType(workType)
+        dao.updateWorkType(workType)
+        return workType.id
+    }
+
+    suspend fun deleteWorkType(workType: WorkTypeEntity) = dao.deleteWorkType(workType)
+
+    suspend fun ensureDefaultWorkTypes(defaultRate: Double) {
+        if (dao.workTypeCount() != 0) return
+        val safeRate = defaultRate.coerceAtLeast(0.0)
+        dao.insertWorkTypes(
+            listOf(
+                WorkTypeEntity(name = "Ploughing", ratePerBigha = safeRate),
+                WorkTypeEntity(name = "Cultivating", ratePerBigha = safeRate),
+                WorkTypeEntity(name = "Rotavating", ratePerBigha = safeRate),
+            ),
+        )
+    }
 
     suspend fun saveWorkWithPayment(
         workEntry: WorkEntryEntity,
@@ -78,11 +102,13 @@ class HarvestRepository(private val database: AppDatabase) {
         dao.clearWorkEntries()
         dao.clearFields()
         dao.clearCustomers()
+        dao.clearWorkTypes()
         if (snapshot.customers.isNotEmpty()) dao.insertCustomers(snapshot.customers)
         if (snapshot.fields.isNotEmpty()) dao.insertFields(snapshot.fields)
         if (snapshot.workEntries.isNotEmpty()) dao.insertWorkEntries(snapshot.workEntries)
         if (snapshot.payments.isNotEmpty()) dao.insertPayments(snapshot.payments)
         if (snapshot.reminders.isNotEmpty()) dao.insertReminders(snapshot.reminders)
+        if (snapshot.workTypes.isNotEmpty()) dao.insertWorkTypes(snapshot.workTypes)
     }
 }
 
@@ -92,4 +118,5 @@ data class DatabaseSnapshot(
     val workEntries: List<WorkEntryEntity>,
     val payments: List<PaymentEntity>,
     val reminders: List<ReminderEntity>,
+    val workTypes: List<WorkTypeEntity>,
 )

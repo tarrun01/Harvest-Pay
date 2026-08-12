@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.Agriculture
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Description
@@ -39,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.harvestpay.app.data.AppSettings
 import com.harvestpay.app.data.ThemePreference
+import com.harvestpay.app.BuildConfig
 import com.harvestpay.app.ui.components.ConfirmDialog
 import com.harvestpay.app.ui.components.DecimalField
 import com.harvestpay.app.ui.components.DropdownField
@@ -48,6 +50,7 @@ import java.time.LocalDate
 fun MoreScreen(
     onReports: () -> Unit,
     onBackup: () -> Unit,
+    onWorkTypes: () -> Unit,
     onSettings: () -> Unit,
     onAbout: () -> Unit,
     onLogout: () -> Unit,
@@ -56,9 +59,10 @@ fun MoreScreen(
     LazyColumn(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item { Text("More", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 14.dp, bottom = 4.dp)) }
         item { MoreRow(Icons.Outlined.QueryStats, "Reports", "Earnings, work and pending insights", onReports) }
+        item { MoreRow(Icons.Outlined.Agriculture, "Work type management", "Add work types and set their rate per Bigha", onWorkTypes) }
         item { MoreRow(Icons.Outlined.Backup, "Backup & export", "JSON backup, restore and CSV records", onBackup) }
         item { MoreRow(Icons.Outlined.Settings, "Settings", "Owner, rates, theme and app lock", onSettings) }
-        item { MoreRow(Icons.Outlined.Info, "About", "Harvest Pay 1.0.0", onAbout) }
+        item { MoreRow(Icons.Outlined.Info, "About", "Harvest Pay ${BuildConfig.VERSION_NAME}", onAbout) }
         item { MoreRow(Icons.Outlined.Logout, "Logout", "Lock the local ledger", { confirmLogout = true }) }
     }
     if (confirmLogout) {
@@ -107,7 +111,10 @@ fun SettingsScreen(
                 Column(Modifier.padding(8.dp)) {
                     ThemePreference.entries.forEach { theme ->
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            RadioButton(selected = current.theme == theme, onClick = { onTheme(theme) })
+                            RadioButton(selected = settings.theme == theme, onClick = {
+                                settings = settings.copy(theme = theme)
+                                onTheme(theme)
+                            })
                             Text(theme.name.lowercase().replaceFirstChar(Char::uppercase))
                         }
                     }
@@ -119,8 +126,8 @@ fun SettingsScreen(
             DropdownField(
                 "Auto-lock after inactivity",
                 settings.autoLockMinutes,
-                listOf(5, 15, 30, 60),
-                { "$it minutes" },
+                listOf(0, 5, 15, 30, 60),
+                { if (it == 0) "Never" else "$it minutes" },
                 { settings = settings.copy(autoLockMinutes = it) },
             )
         }
@@ -193,7 +200,7 @@ fun AboutScreen() {
     Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Icon(Icons.Outlined.DarkMode, null, tint = MaterialTheme.colorScheme.primary)
         Text("Harvest Pay", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text("Version 1.0.0")
+        Text("Version ${BuildConfig.VERSION_NAME}")
         Text("An offline-first ledger for tractor owners: customers, fields, ploughing work, payments, reminders, receipts and reports.")
         Text("Your business data stays on this device unless you export or share it.", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }

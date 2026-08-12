@@ -1,21 +1,22 @@
-# Harvest Pay V 1.0.0
+# Harvest Pay
 
 Harvest Pay is an offline-first Android ledger for a tractor owner who charges farmers by field size. It is built with Kotlin, Jetpack Compose, Material 3, Room, MVVM, Navigation Compose and DataStore.
 
 ## What is included
 
-- Local owner login with PBKDF2 password verification, show/hide password, Remember Me, auto-lock and logout
-- Dashboard totals for customers, fields, Bigha, earnings, collections and pending balances
+- Full-screen tractor login artwork with PBKDF2 password verification, show/hide password, Remember Me, auto-lock (including Never) and logout
+- Dashboard totals for customers, fields, work types, Bigha, earnings, collections, pending balances and advance credit
 - Customer CRUD, duplicate-mobile protection, search, sorting, call/WhatsApp actions and full profiles
 - Multiple fields per customer with decimal Bigha sizes
-- Ploughing entries with rate presets, rounds, discount, extras and live charge calculation
-- Paid, partially paid and pending states with work-level payment allocation and customer ledgers
-- Pending-payment queue, full/partial payment actions and WhatsApp reminder drafts
+- Work entries with managed work types, automatic per-Bigha rates, manual rate overrides, decimal rounds, discounts, extras and live charge calculation
+- Paid, partially paid, pending and advance states with customer-account ledgers; credit clears the oldest work first and carries forward automatically
+- Pending-payment queue, unrestricted customer payments, advance-credit tracking and WhatsApp reminder drafts
 - Local scheduled notifications using WorkManager
 - Filtered reports by period, customer, village and payment state
 - Receipt PDF creation, save/share actions and WhatsApp sharing
 - Complete JSON backup/restore plus customer and payment CSV exports through Android's document picker
 - Light, dark and system themes; owner/business and default-rate settings
+- Short navigation and content animations, with ledger calculations moved off the main UI thread
 - No Firebase, server, cloud database, analytics SDK or Internet permission
 
 ## Open and run
@@ -28,10 +29,10 @@ Harvest Pay is an offline-first Android ledger for a tractor owner who charges f
 Command-line verification:
 
 ```bash
-./gradlew testDebugUnitTest assembleDebug
+./gradlew testDebugUnitTest lintDebug assembleDebug assemblePreview
 ```
 
-The generated debug APK is at `apk/HarvestPay-debug.apk`.
+The generated debug APK is at `app/build/outputs/apk/debug/app-debug.apk`. The installable, release-optimized preview APK is at `app/build/outputs/apk/preview/app-preview.apk`.
 
 ## Initial access
 

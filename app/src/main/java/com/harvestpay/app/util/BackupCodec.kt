@@ -8,6 +8,7 @@ import com.harvestpay.app.data.PaymentEntity
 import com.harvestpay.app.data.ReminderEntity
 import com.harvestpay.app.data.ThemePreference
 import com.harvestpay.app.data.WorkEntryEntity
+import com.harvestpay.app.data.WorkTypeEntity
 import java.time.Instant
 import org.json.JSONArray
 import org.json.JSONObject
@@ -15,7 +16,7 @@ import org.json.JSONObject
 data class BackupBundle(val snapshot: DatabaseSnapshot, val settings: AppSettings)
 
 object BackupCodec {
-    private const val SCHEMA_VERSION = 1
+    private const val SCHEMA_VERSION = 2
 
     fun encode(bundle: BackupBundle): String = JSONObject().apply {
         put("app", "Harvest Pay")
@@ -26,28 +27,34 @@ object BackupCodec {
         put("workEntries", JSONArray().also { array -> bundle.snapshot.workEntries.forEach { array.put(it.json()) } })
         put("payments", JSONArray().also { array -> bundle.snapshot.payments.forEach { array.put(it.json()) } })
         put("reminders", JSONArray().also { array -> bundle.snapshot.reminders.forEach { array.put(it.json()) } })
+        put("workTypes", JSONArray().also { array -> bundle.snapshot.workTypes.forEach { array.put(it.json()) } })
         put("settings", bundle.settings.json())
     }.toString(2)
 
     fun decode(text: String): BackupBundle {
         val root = JSONObject(text)
         require(root.optString("app") == "Harvest Pay") { "This is not a Harvest Pay backup." }
-        require(root.optInt("schemaVersion") == SCHEMA_VERSION) { "Unsupported backup version." }
+        val schemaVersion = root.optInt("schemaVersion")
+        require(schemaVersion in 1..SCHEMA_VERSION) { "Unsupported backup version." }
 
         val customers = root.requiredArray("customers").mapObjects { it.customer() }
         val fields = root.requiredArray("fields").mapObjects { it.field() }
         val work = root.requiredArray("workEntries").mapObjects { it.workEntry() }
         val payments = root.requiredArray("payments").mapObjects { it.payment() }
         val reminders = root.optJSONArray("reminders")?.mapObjects { it.reminder() }.orEmpty()
+        val workTypes = root.optJSONArray("workTypes")?.mapObjects { it.workType() }.orEmpty()
         val settings = root.optJSONObject("settings")?.settings() ?: AppSettings()
 
         require(customers.all { it.id > 0 && it.name.isNotBlank() }) { "Backup contains invalid customers." }
         require(fields.all { it.id > 0 && it.customerId > 0 && it.sizeBigha >= 0 }) { "Backup contains invalid fields." }
         require(work.all { it.id > 0 && it.totalAmount >= 0 && it.sizeBigha >= 0 }) { "Backup contains invalid work entries." }
         require(payments.all { it.id > 0 && it.amount >= 0 }) { "Backup contains invalid payments." }
+        require(workTypes.all { it.id > 0 && it.name.isNotBlank() && it.ratePerBigha >= 0 }) {
+            "Backup contains invalid work types."
+        }
 
         return BackupBundle(
-            snapshot = DatabaseSnapshot(customers, fields, work, payments, reminders),
+            snapshot = DatabaseSnapshot(customers, fields, work, payments, reminders, workTypes),
             settings = settings,
         )
     }
@@ -95,7 +102,8 @@ object BackupCodec {
     private fun WorkEntryEntity.json() = JSONObject().apply {
         put("id", id); put("customerId", customerId); put("fieldId", fieldId ?: JSONObject.NULL)
         put("workDate", workDate); put("sizeBigha", sizeBigha); put("ratePerBigha", ratePerBigha)
-        put("rounds", rounds); put("workType", workType); put("subtotal", subtotal)
+        put("rounds", rounds); put("roundMultiplier", roundMultiplier)
+        put("workType", workType); put("subtotal", subtotal)
         put("discount", discount); put("extraCharges", extraCharges); put("totalAmount", totalAmount)
         put("notes", notes); put("createdAt", createdAt)
     }
@@ -109,6 +117,10 @@ object BackupCodec {
     private fun ReminderEntity.json() = JSONObject().apply {
         put("id", id); put("customerId", customerId); put("reminderAt", reminderAt)
         put("message", message); put("completed", completed)
+    }
+
+    private fun WorkTypeEntity.json() = JSONObject().apply {
+        put("id", id); put("name", name); put("ratePerBigha", ratePerBigha); put("createdAt", createdAt)
     }
 
     private fun AppSettings.json() = JSONObject().apply {
@@ -134,7 +146,9 @@ object BackupCodec {
         id = getLong("id"), customerId = getLong("customerId"),
         fieldId = nullableLong("fieldId"), workDate = getLong("workDate"),
         sizeBigha = getDouble("sizeBigha"), ratePerBigha = getDouble("ratePerBigha"),
-        rounds = optInt("rounds", 1), workType = optString("workType", "Ploughing"),
+        rounds = optInt("rounds", 1),
+        roundMultiplier = optDouble("roundMultiplier", optDouble("rounds", 1.0)),
+        workType = optString("workType", "Ploughing"),
         subtotal = getDouble("subtotal"), discount = optDouble("discount", 0.0),
         extraCharges = optDouble("extraCharges", 0.0), totalAmount = getDouble("totalAmount"),
         notes = optString("notes"), createdAt = optLong("createdAt", System.currentTimeMillis()),
@@ -150,6 +164,11 @@ object BackupCodec {
     private fun JSONObject.reminder() = ReminderEntity(
         id = getLong("id"), customerId = getLong("customerId"), reminderAt = getLong("reminderAt"),
         message = getString("message"), completed = optBoolean("completed", false),
+    )
+
+    private fun JSONObject.workType() = WorkTypeEntity(
+        id = getLong("id"), name = getString("name"), ratePerBigha = getDouble("ratePerBigha"),
+        createdAt = optLong("createdAt", System.currentTimeMillis()),
     )
 
     private fun JSONObject.settings() = AppSettings(

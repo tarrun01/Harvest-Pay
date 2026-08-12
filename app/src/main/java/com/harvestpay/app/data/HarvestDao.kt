@@ -25,8 +25,17 @@ interface HarvestDao {
     @Query("SELECT * FROM reminders WHERE completed = 0 ORDER BY reminderAt")
     fun observeReminders(): Flow<List<ReminderEntity>>
 
+    @Query("SELECT * FROM work_types ORDER BY name COLLATE NOCASE")
+    fun observeWorkTypes(): Flow<List<WorkTypeEntity>>
+
     @Query("SELECT EXISTS(SELECT 1 FROM customers WHERE mobile = :mobile AND id != :excludingId)")
     suspend fun mobileExists(mobile: String, excludingId: Long = 0): Boolean
+
+    @Query("SELECT EXISTS(SELECT 1 FROM work_types WHERE LOWER(name) = LOWER(:name) AND id != :excludingId)")
+    suspend fun workTypeNameExists(name: String, excludingId: Long = 0): Boolean
+
+    @Query("SELECT COUNT(*) FROM work_types")
+    suspend fun workTypeCount(): Int
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertCustomer(customer: CustomerEntity): Long
@@ -88,6 +97,18 @@ interface HarvestDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReminders(reminders: List<ReminderEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertWorkType(workType: WorkTypeEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWorkTypes(workTypes: List<WorkTypeEntity>)
+
+    @Update
+    suspend fun updateWorkType(workType: WorkTypeEntity)
+
+    @Delete
+    suspend fun deleteWorkType(workType: WorkTypeEntity)
+
     @Query("DELETE FROM reminders")
     suspend fun clearReminders()
 
@@ -102,4 +123,7 @@ interface HarvestDao {
 
     @Query("DELETE FROM customers")
     suspend fun clearCustomers()
+
+    @Query("DELETE FROM work_types")
+    suspend fun clearWorkTypes()
 }

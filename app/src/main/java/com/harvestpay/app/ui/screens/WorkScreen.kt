@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -26,12 +25,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.harvestpay.app.data.AppSettings
 import com.harvestpay.app.data.CustomerEntity
 import com.harvestpay.app.data.FieldEntity
 import com.harvestpay.app.data.WorkEntryEntity
+import com.harvestpay.app.data.WorkTypeEntity
 import com.harvestpay.app.domain.BusinessCalculator
 import com.harvestpay.app.domain.HarvestUiState
 import com.harvestpay.app.ui.components.DateField
@@ -54,7 +53,8 @@ fun WorkFormScreen(
     var size by remember { mutableStateOf("") }
     var rate by remember(settings.defaultRate) { mutableStateOf(settings.defaultRate.toString()) }
     var rounds by remember { mutableStateOf("1") }
-    var workType by remember { mutableStateOf("Ploughing") }
+    var workTypeName by remember { mutableStateOf("Ploughing") }
+    var appliedInitialWorkTypeRate by remember { mutableStateOf(false) }
     var discount by remember { mutableStateOf("") }
     var extras by remember { mutableStateOf("") }
     var initialPaid by remember { mutableStateOf("") }
@@ -66,10 +66,24 @@ fun WorkFormScreen(
             customer = uiState.customers.firstOrNull { it.id == preselectedCustomerId }
         }
     }
+    LaunchedEffect(uiState.workTypes) {
+        if (!appliedInitialWorkTypeRate && uiState.workTypes.isNotEmpty()) {
+            val initialType = uiState.workTypes.firstOrNull { it.name == workTypeName }
+                ?: uiState.workTypes.first()
+            workTypeName = initialType.name
+            rate = initialType.ratePerBigha.toString()
+            appliedInitialWorkTypeRate = true
+        }
+    }
     val customerFields = uiState.fields.filter { it.customerId == customer?.id }
+    val workTypeOptions = uiState.workTypes.ifEmpty {
+        listOf(WorkTypeEntity(name = "Ploughing", ratePerBigha = settings.defaultRate))
+    }
+    val selectedWorkType = workTypeOptions.firstOrNull { it.name == workTypeName }
+        ?: workTypeOptions.firstOrNull()
     val numericSize = size.toDoubleOrNull() ?: 0.0
     val numericRate = rate.toDoubleOrNull() ?: 0.0
-    val numericRounds = rounds.toIntOrNull()?.coerceAtLeast(1) ?: 1
+    val numericRounds = rounds.toDoubleOrNull() ?: 0.0
     val subtotal = BusinessCalculator.subtotal(numericSize, numericRate, numericRounds)
     val finalAmount = BusinessCalculator.finalAmount(
         subtotal,
@@ -77,7 +91,11 @@ fun WorkFormScreen(
         extras.toDoubleOrNull() ?: 0.0,
     )
     val paid = initialPaid.toDoubleOrNull() ?: 0.0
-    val status = BusinessCalculator.status(finalAmount, paid).name.replace('_', ' ')
+    val customerSummary = uiState.customerSummaries.firstOrNull { it.customer.id == customer?.id }
+    val projectedBill = (customerSummary?.totalBill ?: 0.0) + finalAmount
+    val projectedPaid = (customerSummary?.totalPaid ?: 0.0) + paid
+    val projectedPending = BusinessCalculator.pending(projectedBill, projectedPaid)
+    val projectedAdvance = BusinessCalculator.money((projectedPaid - projectedBill).coerceAtLeast(0.0))
     val presets = settings.ratePresets.split(',').mapNotNull { it.trim().toDoubleOrNull() }.distinct()
 
     LazyColumn(
@@ -86,8 +104,8 @@ fun WorkFormScreen(
     ) {
         item {
             Column(Modifier.padding(top = 14.dp)) {
-                Text("New ploughing entry", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text("Charges calculate automatically as you type.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("New work entry", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text("Choose a work type for its saved rate, then adjust the rate if needed.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item {
@@ -134,20 +152,16 @@ fun WorkFormScreen(
         }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(
-                    rounds,
-                    { if (it.length <= 2 && it.all(Char::isDigit)) rounds = it },
-                    label = { Text("Rounds") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
+                DecimalField(rounds, { rounds = it }, "Rounds *", Modifier.weight(1f))
                 DropdownField(
-                    "Work type",
-                    workType,
-                    listOf("Ploughing", "Harrowing", "Cultivating", "Levelling", "Other"),
-                    { it },
-                    { workType = it },
+                    "Work type *",
+                    selectedWorkType,
+                    workTypeOptions,
+                    { it.name },
+                    { selected ->
+                        workTypeName = selected.name
+                        rate = selected.ratePerBigha.toString()
+                    },
                     Modifier.weight(1f),
                 )
             }
@@ -184,8 +198,16 @@ fun WorkFormScreen(
         }
         item {
             Text(
-                "Status: $status • Pending ${formatMoney(BusinessCalculator.pending(finalAmount, paid))}",
-                color = if (paid >= finalAmount && finalAmount > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                if (projectedAdvance > 0.005) {
+                    "Customer account after save: ${formatMoney(projectedAdvance)} advance"
+                } else {
+                    "Customer account after save: ${formatMoney(projectedPending)} pending"
+                },
+                color = if (projectedAdvance > 0.005 || projectedPending <= 0.005) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
                 fontWeight = FontWeight.SemiBold,
             )
         }
@@ -203,8 +225,9 @@ fun WorkFormScreen(
                                 workDate = date,
                                 sizeBigha = numericSize,
                                 ratePerBigha = numericRate,
-                                rounds = numericRounds,
-                                workType = workType,
+                                rounds = numericRounds.toInt().coerceAtLeast(1),
+                                roundMultiplier = numericRounds,
+                                workType = workTypeName,
                                 subtotal = subtotal,
                                 discount = discount.toDoubleOrNull() ?: 0.0,
                                 extraCharges = extras.toDoubleOrNull() ?: 0.0,
@@ -215,7 +238,7 @@ fun WorkFormScreen(
                             method,
                         )
                     },
-                    enabled = customer != null && numericSize > 0 && numericRate >= 0,
+                    enabled = customer != null && numericSize > 0 && numericRate >= 0 && numericRounds > 0,
                     modifier = Modifier.weight(1f),
                 ) { Text("Save work") }
             }

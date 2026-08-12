@@ -46,7 +46,6 @@ import com.harvestpay.app.data.CustomerEntity
 import com.harvestpay.app.data.PaymentEntity
 import com.harvestpay.app.data.ReminderEntity
 import com.harvestpay.app.domain.HarvestUiState
-import com.harvestpay.app.domain.WorkSummary
 import com.harvestpay.app.ui.components.ConfirmDialog
 import com.harvestpay.app.ui.components.DateField
 import com.harvestpay.app.ui.components.DecimalField
@@ -75,20 +74,26 @@ fun PaymentsScreen(
     var sort by remember { mutableStateOf("Highest amount") }
     var deletePayment by remember { mutableStateOf<PaymentEntity?>(null) }
     var deleteReminder by remember { mutableStateOf<ReminderEntity?>(null) }
-    val pending = uiState.customerSummaries.filter {
-        it.pending > 0.005 && (search.isBlank() || it.customer.name.contains(search, true) || it.customer.mobile.contains(search))
-    }.let { list ->
-        when (sort) {
-            "Oldest work" -> list.sortedBy { it.lastWorkDate ?: Long.MAX_VALUE }
-            "Name" -> list.sortedBy { it.customer.name }
-            else -> list.sortedByDescending { it.pending }
+    val pending = remember(uiState.customerSummaries, search, sort) {
+        uiState.customerSummaries.filter {
+            it.pending > 0.005 && (search.isBlank() || it.customer.name.contains(search, true) || it.customer.mobile.contains(search))
+        }.let { list ->
+            when (sort) {
+                "Oldest work" -> list.sortedBy { it.lastWorkDate ?: Long.MAX_VALUE }
+                "Name" -> list.sortedBy { it.customer.name }
+                else -> list.sortedByDescending { it.pending }
+            }
         }
+    }
+    val advances = remember(uiState.customerSummaries) {
+        uiState.customerSummaries.filter { it.advance > 0.005 }
+            .sortedByDescending { it.advance }
     }
 
     LazyColumn(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             TabRow(selectedTabIndex = tab, modifier = Modifier.padding(top = 10.dp)) {
-                listOf("Pending", "History", "Reminders").forEachIndexed { index, title ->
+                listOf("Pending", "History", "Reminders", "Advances").forEachIndexed { index, title ->
                     Tab(selected = tab == index, onClick = { tab = index }, text = { Text(title) })
                 }
             }
@@ -147,7 +152,7 @@ fun PaymentsScreen(
                     }
                 }
             }
-        } else {
+        } else if (tab == 2) {
             if (reminders.isEmpty()) item { EmptyState("No reminders", "Schedule a local notification for a pending customer.") }
             else items(reminders, key = { "reminder-${it.id}" }) { reminder ->
                 val customer = uiState.customers.firstOrNull { it.id == reminder.customerId }
@@ -159,6 +164,40 @@ fun PaymentsScreen(
                             Text(reminder.message, style = MaterialTheme.typography.bodySmall)
                         }
                         IconButton(onClick = { deleteReminder = reminder }) { Icon(Icons.Outlined.Delete, "Delete", tint = MaterialTheme.colorScheme.error) }
+                    }
+                }
+            }
+        } else {
+            if (advances.isEmpty()) {
+                item { EmptyState("No advance balances", "Extra customer payments will appear here as reusable credit.") }
+            } else {
+                item {
+                    Text(
+                        "Advance credit is applied automatically to each customer's next work order.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                items(advances, key = { "advance-${it.customer.id}" }) { summary ->
+                    Card(onClick = { onOpenCustomer(summary.customer.id) }, modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Column {
+                                Text(summary.customer.name, fontWeight = FontWeight.Bold)
+                                Text(summary.customer.mobile, style = MaterialTheme.typography.bodySmall)
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    formatMoney(summary.advance),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                Text("advance", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
                     }
                 }
             }
@@ -177,11 +216,10 @@ fun PaymentsScreen(
 fun PaymentFormScreen(
     uiState: HarvestUiState,
     preselectedCustomerId: Long?,
-    onSave: (WorkSummary, Double, Long, String, String) -> Unit,
+    onSave: (CustomerEntity, Double, Long, String, String) -> Unit,
     onCancel: () -> Unit,
 ) {
     var customer by remember { mutableStateOf<CustomerEntity?>(null) }
-    var work by remember { mutableStateOf<WorkSummary?>(null) }
     var amount by remember { mutableStateOf("") }
     var date by remember { mutableLongStateOf(todayEpochDay()) }
     var method by remember { mutableStateOf("Cash") }
@@ -189,44 +227,86 @@ fun PaymentFormScreen(
     androidx.compose.runtime.LaunchedEffect(preselectedCustomerId, uiState.customers) {
         if (customer == null && preselectedCustomerId != null) customer = uiState.customers.firstOrNull { it.id == preselectedCustomerId }
     }
-    val pendingWork = uiState.workSummaries.filter { it.work.customerId == customer?.id && it.pending > 0.005 }
-    androidx.compose.runtime.LaunchedEffect(customer?.id, pendingWork.size) {
-        if (work !in pendingWork) work = pendingWork.firstOrNull()
+    val summary = uiState.customerSummaries.firstOrNull { it.customer.id == customer?.id }
+    androidx.compose.runtime.LaunchedEffect(customer?.id, summary?.pending) {
+        if (amount.isBlank() && (summary?.pending ?: 0.0) > 0.005) {
+            amount = summary?.pending.toString()
+        }
     }
+    val numericAmount = amount.toDoubleOrNull() ?: 0.0
+    val projectedTotalPaid = (summary?.totalPaid ?: 0.0) + numericAmount
+    val projectedPending = com.harvestpay.app.domain.BusinessCalculator.pending(
+        summary?.totalBill ?: 0.0,
+        projectedTotalPaid,
+    )
+    val projectedAdvance = com.harvestpay.app.domain.BusinessCalculator.money(
+        (projectedTotalPaid - (summary?.totalBill ?: 0.0)).coerceAtLeast(0.0),
+    )
 
     LazyColumn(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text("Record payment", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 16.dp)) }
         item {
-            DropdownField("Customer *", customer, uiState.customerSummaries.filter { it.pending > 0.005 }.map { it.customer }, { "${it.name} • ${formatMoney(uiState.customerSummaries.first { summary -> summary.customer.id == it.id }.pending)} pending" }, {
-                customer = it; work = null; amount = ""
-            })
-        }
-        item {
             DropdownField(
-                "Pending job *",
-                work,
-                pendingWork,
-                { "${it.field?.fieldName ?: "Field"} • ${formatDate(it.work.workDate)} • ${formatMoney(it.pending)}" },
-                { selected -> work = selected; amount = selected.pending.toString() },
-                enabled = customer != null && pendingWork.isNotEmpty(),
+                "Customer *",
+                customer,
+                uiState.customerSummaries.map { it.customer },
+                { selected ->
+                    val account = uiState.customerSummaries.first { it.customer.id == selected.id }
+                    when {
+                        account.pending > 0.005 -> "${selected.name} • ${formatMoney(account.pending)} pending"
+                        account.advance > 0.005 -> "${selected.name} • ${formatMoney(account.advance)} advance"
+                        else -> "${selected.name} • settled"
+                    }
+                },
+                { selected ->
+                    customer = selected
+                    val account = uiState.customerSummaries.firstOrNull { it.customer.id == selected.id }
+                    amount = account?.pending?.takeIf { it > 0.005 }?.toString().orEmpty()
+                },
             )
         }
-        work?.let { selected ->
+        summary?.let { selected ->
             item {
                 Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text("Job total ${formatMoney(selected.work.totalAmount)}")
-                        Text("Already paid ${formatMoney(selected.paid)}")
-                        Text("Pending ${formatMoney(selected.pending)}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Text("Customer account", fontWeight = FontWeight.Bold)
+                        Text("Work total ${formatMoney(selected.totalBill)}")
+                        Text("Payments received ${formatMoney(selected.totalPaid)}")
+                        when {
+                            projectedAdvance > 0.005 -> Text(
+                                "After payment: ${formatMoney(projectedAdvance)} advance",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            projectedPending > 0.005 -> Text(
+                                "After payment: ${formatMoney(projectedPending)} pending",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                            else -> Text(
+                                "After payment: settled",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
                     }
                 }
             }
         }
         item { DecimalField(amount, { amount = it }, "Payment amount *", prefix = "₹") }
-        item {
-            work?.let { selected ->
-                OutlinedButton(onClick = { amount = selected.pending.toString() }, modifier = Modifier.fillMaxWidth()) { Text("Use full pending amount") }
+        summary?.takeIf { it.pending > 0.005 }?.let { selected ->
+            item {
+                OutlinedButton(onClick = { amount = selected.pending.toString() }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Use full pending amount")
+                }
             }
+        }
+        item {
+            Text(
+                "Payments clear the oldest due first. Any extra becomes advance credit for the next work order.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         item { DateField("Payment date", date, { date = it }) }
         item { DropdownField("Payment method", method, listOf("Cash", "UPI", "Bank Transfer", "Other"), { it }, { method = it }) }
@@ -235,8 +315,8 @@ fun PaymentFormScreen(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = onCancel, modifier = Modifier.weight(1f)) { Text("Cancel") }
                 Button(
-                    onClick = { work?.let { onSave(it, amount.toDoubleOrNull() ?: 0.0, date, method, notes) } },
-                    enabled = work != null && (amount.toDoubleOrNull() ?: 0.0) > 0,
+                    onClick = { customer?.let { onSave(it, numericAmount, date, method, notes) } },
+                    enabled = customer != null && numericAmount > 0,
                     modifier = Modifier.weight(1f),
                 ) { Text("Save payment") }
             }

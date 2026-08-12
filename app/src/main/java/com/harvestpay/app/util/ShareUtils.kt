@@ -26,7 +26,14 @@ object ShareUtils {
             Total Work Amount: ${formatMoney(summary.totalBill)}
             Amount Paid: ${formatMoney(summary.totalPaid)}
             Pending Amount: ${formatMoney(summary.pending)}
+            Advance Credit: ${formatMoney(summary.advance)}
         """.trimIndent()
+
+        val closing = when {
+            summary.pending > 0.005 -> "Please make the pending payment when convenient."
+            summary.advance > 0.005 -> "Your advance credit will be adjusted automatically against the next work order."
+            else -> "Your account is fully settled."
+        }
 
         return """
             Namaste ${customer.name},
@@ -37,7 +44,7 @@ object ShareUtils {
 
             Total Outstanding Amount: ${formatMoney(summary.pending)}
 
-            Please make the pending payment when convenient.
+            $closing
 
             Thank you.
         """.trimIndent()

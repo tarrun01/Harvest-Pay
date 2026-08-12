@@ -72,8 +72,10 @@ fun DashboardScreen(
                     "Amount earned" to formatMoney(stats.totalEarned),
                     "Amount received" to formatMoney(stats.totalReceived),
                     "Pending amount" to formatMoney(stats.totalPending),
+                    "Advance credit" to formatMoney(stats.totalAdvance),
                     "Received today" to formatMoney(stats.receivedToday),
                     "Pending customers" to stats.pendingCustomers.toString(),
+                    "Work types" to uiState.workTypes.size.toString(),
                 ),
             )
         }

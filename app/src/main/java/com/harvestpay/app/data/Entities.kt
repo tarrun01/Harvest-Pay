@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.ColumnInfo
 
 @Entity(
     tableName = "customers",
@@ -67,13 +68,27 @@ data class WorkEntryEntity(
     val workDate: Long,
     val sizeBigha: Double,
     val ratePerBigha: Double,
+    /** Legacy integer value retained so existing databases upgrade without rebuilding payment links. */
     val rounds: Int = 1,
+    /** Decimal multiplier used for billing, for example 0.5, 1 or 1.5 rounds. */
+    @ColumnInfo(defaultValue = "1.0") val roundMultiplier: Double = 1.0,
     val workType: String = "Ploughing",
     val subtotal: Double,
     val discount: Double = 0.0,
     val extraCharges: Double = 0.0,
     val totalAmount: Double,
     val notes: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
+@Entity(
+    tableName = "work_types",
+    indices = [Index(value = ["name"], unique = true)],
+)
+data class WorkTypeEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val ratePerBigha: Double,
     val createdAt: Long = System.currentTimeMillis(),
 )
 

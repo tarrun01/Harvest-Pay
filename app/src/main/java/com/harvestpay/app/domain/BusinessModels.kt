@@ -4,6 +4,7 @@ import com.harvestpay.app.data.CustomerEntity
 import com.harvestpay.app.data.FieldEntity
 import com.harvestpay.app.data.PaymentEntity
 import com.harvestpay.app.data.WorkEntryEntity
+import com.harvestpay.app.data.WorkTypeEntity
 
 enum class PaymentStatus { PAID, PARTIALLY_PAID, PENDING }
 
@@ -25,6 +26,7 @@ data class CustomerSummary(
     val totalBill: Double,
     val totalPaid: Double,
     val pending: Double,
+    val advance: Double,
     val lastWorkDate: Long?,
 )
 
@@ -35,6 +37,7 @@ data class DashboardStats(
     val totalEarned: Double = 0.0,
     val totalReceived: Double = 0.0,
     val totalPending: Double = 0.0,
+    val totalAdvance: Double = 0.0,
     val receivedToday: Double = 0.0,
     val pendingCustomers: Int = 0,
 )
@@ -44,6 +47,7 @@ data class HarvestUiState(
     val fields: List<FieldEntity> = emptyList(),
     val workEntries: List<WorkEntryEntity> = emptyList(),
     val payments: List<PaymentEntity> = emptyList(),
+    val workTypes: List<WorkTypeEntity> = emptyList(),
     val workSummaries: List<WorkSummary> = emptyList(),
     val customerSummaries: List<CustomerSummary> = emptyList(),
     val stats: DashboardStats = DashboardStats(),

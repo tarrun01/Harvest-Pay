@@ -15,6 +15,7 @@ import com.harvestpay.app.data.ReminderEntity
 import com.harvestpay.app.data.SettingsRepository
 import com.harvestpay.app.data.ThemePreference
 import com.harvestpay.app.data.WorkEntryEntity
+import com.harvestpay.app.data.WorkTypeEntity
 import com.harvestpay.app.domain.BusinessCalculator
 import com.harvestpay.app.domain.HarvestUiState
 import com.harvestpay.app.domain.WorkSummary
@@ -22,13 +23,16 @@ import com.harvestpay.app.notification.ReminderWorker
 import com.harvestpay.app.security.LocalAuth
 import com.harvestpay.app.util.BackupBundle
 import com.harvestpay.app.util.BackupCodec
+import com.harvestpay.app.util.formatMoney
 import java.time.LocalDate
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -58,8 +62,11 @@ class HarvestViewModel(
         repository.fields,
         repository.workEntries,
         repository.payments,
-        BusinessCalculator::buildUiState,
-    ).stateIn(
+        repository.workTypes,
+    ) { customers, fields, workEntries, payments, workTypes ->
+        BusinessCalculator.buildUiState(customers, fields, workEntries, payments)
+            .copy(workTypes = workTypes)
+    }.flowOn(Dispatchers.Default).stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
         HarvestUiState(),
@@ -82,6 +89,7 @@ class HarvestViewModel(
                 resolved = true,
                 authenticated = initial.rememberedAuthenticated,
             )
+            repository.ensureDefaultWorkTypes(initial.defaultRate)
         }
     }
 
@@ -119,7 +127,9 @@ class HarvestViewModel(
     fun onForeground() {
         val since = backgroundAt ?: return
         backgroundAt = null
-        val timeout = settings.value.autoLockMinutes.coerceAtLeast(1) * 60_000L
+        val lockMinutes = settings.value.autoLockMinutes
+        if (lockMinutes <= 0) return
+        val timeout = lockMinutes * 60_000L
         if (_auth.value.authenticated && System.currentTimeMillis() - since >= timeout) {
             viewModelScope.launch {
                 settingsRepository.setAuthentication(settings.value.rememberLogin, authenticated = false)
@@ -164,12 +174,11 @@ class HarvestViewModel(
         paymentMethod: String,
         onSaved: (Long) -> Unit = {},
     ) {
-        if (work.sizeBigha <= 0 || work.ratePerBigha < 0 || work.totalAmount < 0 || initialPaid < 0) {
-            postMessage("Work and payment values cannot be negative; field size must be greater than zero.")
-            return
-        }
-        if (initialPaid > work.totalAmount + 0.005) {
-            postMessage("Amount paid cannot exceed the final amount.")
+        if (
+            work.sizeBigha <= 0 || work.ratePerBigha < 0 || work.roundMultiplier <= 0 ||
+            work.totalAmount < 0 || initialPaid < 0
+        ) {
+            postMessage("Work and payment values cannot be negative; size and rounds must be greater than zero.")
             return
         }
         viewModelScope.launch {
@@ -206,10 +215,6 @@ class HarvestViewModel(
             postMessage("Payment amount must be greater than zero.")
             return
         }
-        if (amount > work.pending + 0.005) {
-            postMessage("Payment cannot exceed the pending amount.")
-            return
-        }
         action("Payment recorded.") {
             repository.savePayment(
                 PaymentEntity(
@@ -225,30 +230,96 @@ class HarvestViewModel(
         }
     }
 
+    fun addCustomerPayment(
+        customerId: Long,
+        amount: Double,
+        date: Long,
+        method: String,
+        notes: String,
+        onSaved: () -> Unit = {},
+    ) {
+        if (amount <= 0) {
+            postMessage("Payment amount must be greater than zero.")
+            return
+        }
+        val customer = uiState.value.customerSummaries.firstOrNull { it.customer.id == customerId }
+        if (customer == null) {
+            postMessage("Choose a customer first.")
+            return
+        }
+        val projectedAdvance = BusinessCalculator.money(
+            (customer.totalPaid + amount - customer.totalBill).coerceAtLeast(0.0),
+        )
+        action(
+            if (projectedAdvance > 0.005) {
+                "Payment recorded. ${formatMoney(projectedAdvance)} is now advance credit."
+            } else {
+                "Payment recorded."
+            },
+        ) {
+            repository.savePayment(
+                PaymentEntity(
+                    customerId = customerId,
+                    workEntryId = null,
+                    paymentDate = date,
+                    amount = BusinessCalculator.money(amount),
+                    paymentMethod = method,
+                    notes = notes.trim().ifBlank { "Customer account payment" },
+                ),
+            )
+            onSaved()
+        }
+    }
+
     fun markWorkPaid(work: WorkSummary, method: String = "Cash") {
         if (work.pending <= 0.005) return
         addPayment(work, work.pending, LocalDate.now().toEpochDay(), method, "Balance marked paid")
     }
 
     fun markCustomerPaid(customerId: Long, method: String = "Cash") {
-        val pendingWork = uiState.value.workSummaries.filter {
-            it.work.customerId == customerId && it.pending > 0.005
-        }
-        if (pendingWork.isEmpty()) return
+        val summary = uiState.value.customerSummaries.firstOrNull { it.customer.id == customerId } ?: return
+        if (summary.pending <= 0.005) return
         action("Complete balance marked as paid.") {
-            repository.addPayments(
-                pendingWork.map {
-                    PaymentEntity(
-                        customerId = customerId,
-                        workEntryId = it.work.id,
-                        paymentDate = LocalDate.now().toEpochDay(),
-                        amount = it.pending,
-                        paymentMethod = method,
-                        notes = "Customer balance marked paid",
-                    )
-                },
+            repository.savePayment(
+                PaymentEntity(
+                    customerId = customerId,
+                    workEntryId = null,
+                    paymentDate = LocalDate.now().toEpochDay(),
+                    amount = summary.pending,
+                    paymentMethod = method,
+                    notes = "Customer balance marked paid",
+                ),
             )
         }
+    }
+
+    fun saveWorkType(workType: WorkTypeEntity) {
+        val name = workType.name.trim()
+        if (name.isBlank() || workType.ratePerBigha < 0) {
+            postMessage("Enter a work type name and a non-negative rate.")
+            return
+        }
+        viewModelScope.launch {
+            when {
+                repository.workTypeNameExists(name, workType.id) ->
+                    messagesChannel.send("A work type with this name already exists.")
+                else -> runCatching {
+                    repository.saveWorkType(workType.copy(name = name))
+                }.onSuccess {
+                    messagesChannel.send("Work type saved.")
+                }.onFailure {
+                    messagesChannel.send(it.message ?: "Could not save work type.")
+                }
+            }
+        }
+    }
+
+    fun deleteWorkType(workType: WorkTypeEntity) {
+        if (uiState.value.workTypes.size <= 1) {
+            postMessage("Keep at least one work type for new work entries.")
+            return
+        }
+        action("Work type deleted.") { repository.deleteWorkType(workType) }
     }
 
     fun deletePayment(payment: PaymentEntity) = action("Payment deleted.") { repository.deletePayment(payment) }
@@ -279,17 +350,19 @@ class HarvestViewModel(
 
     fun saveSettings(value: AppSettings) = action("Settings saved.") {
         require(value.defaultRate >= 0) { "Default rate cannot be negative." }
+        require(value.autoLockMinutes >= 0) { "Auto-lock value is invalid." }
         settingsRepository.saveBusinessSettings(value)
     }
 
     fun backupJson(): String = BackupCodec.encode(
         BackupBundle(
             DatabaseSnapshot(
-                uiState.value.customers,
-                uiState.value.fields,
-                uiState.value.workEntries,
-                uiState.value.payments,
-                reminders.value,
+                customers = uiState.value.customers,
+                fields = uiState.value.fields,
+                workEntries = uiState.value.workEntries,
+                payments = uiState.value.payments,
+                reminders = reminders.value,
+                workTypes = uiState.value.workTypes,
             ),
             settings.value,
         ),
@@ -306,6 +379,7 @@ class HarvestViewModel(
                     runCatching {
                         repository.restore(bundle.snapshot)
                         settingsRepository.restoreSettings(bundle.settings)
+                        repository.ensureDefaultWorkTypes(bundle.settings.defaultRate)
                     }.onSuccess {
                         messagesChannel.send("Backup restored successfully.")
                         onDone()

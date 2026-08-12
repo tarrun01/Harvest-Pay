@@ -169,8 +169,12 @@ private fun CustomerListCard(
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(formatMoney(summary.pending), fontWeight = FontWeight.Bold, color = if (summary.pending > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
-                    Text("pending", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        formatMoney(if (summary.advance > 0.005) summary.advance else summary.pending),
+                        fontWeight = FontWeight.Bold,
+                        color = if (summary.pending > 0.005) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                    )
+                    Text(if (summary.advance > 0.005) "advance" else "pending", style = MaterialTheme.typography.labelSmall)
                 }
             }
             Text("${summary.fields.size} fields • ${formatBigha(summary.fields.sumOf { it.sizeBigha })} Bigha registered")
@@ -349,6 +353,7 @@ fun CustomerProfileScreen(
                     "Work amount" to formatMoney(summary.totalBill),
                     "Paid" to formatMoney(summary.totalPaid),
                     "Pending" to formatMoney(summary.pending),
+                    "Advance credit" to formatMoney(summary.advance),
                     "Bigha ploughed" to formatBigha(summary.totalBigha),
                 ),
             )
@@ -453,7 +458,11 @@ private fun WorkHistoryCard(
                 Text(work.field?.fieldName ?: "Field", fontWeight = FontWeight.Bold)
                 Text(formatMoney(work.work.totalAmount), fontWeight = FontWeight.Bold)
             }
-            Text("${formatDate(work.work.workDate)} • ${formatBigha(work.work.sizeBigha)} Bigha @ ${formatMoney(work.work.ratePerBigha)}")
+            Text(
+                "${formatDate(work.work.workDate)} • ${work.work.workType} • " +
+                    "${formatBigha(work.work.sizeBigha)} Bigha @ ${formatMoney(work.work.ratePerBigha)} • " +
+                    "${formatBigha(work.work.roundMultiplier)} rounds",
+            )
             Text("Paid ${formatMoney(work.paid)} • Pending ${formatMoney(work.pending)}", style = MaterialTheme.typography.bodySmall)
             if (payments.isNotEmpty()) {
                 Text(

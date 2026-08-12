@@ -1,5 +1,12 @@
 package com.harvestpay.app.ui.navigation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,6 +80,7 @@ import com.harvestpay.app.ui.screens.ReminderFormScreen
 import com.harvestpay.app.ui.screens.ReportsScreen
 import com.harvestpay.app.ui.screens.SettingsScreen
 import com.harvestpay.app.ui.screens.WorkFormScreen
+import com.harvestpay.app.ui.screens.WorkTypeManagementScreen
 
 private object Routes {
     const val DASHBOARD = "dashboard"
@@ -82,6 +90,7 @@ private object Routes {
     const val MORE = "more"
     const val SEARCH = "search"
     const val REPORTS = "reports"
+    const val WORK_TYPES = "work_types"
     const val BACKUP = "backup"
     const val SETTINGS = "settings"
     const val ABOUT = "about"
@@ -98,14 +107,20 @@ private data class NavItem(val route: String, val label: String, val icon: Image
 
 @Composable
 fun HarvestPayRoot(viewModel: HarvestViewModel, auth: AuthState) {
-    if (!auth.authenticated) {
-        LoginScreen(
-            auth = auth,
-            onLogin = viewModel::login,
-            onInputChanged = viewModel::clearLoginError,
-        )
-    } else {
-        AuthenticatedApp(viewModel)
+    AnimatedContent(
+        targetState = auth.authenticated,
+        transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(140)) },
+        label = "authentication",
+    ) { authenticated ->
+        if (!authenticated) {
+            LoginScreen(
+                auth = auth,
+                onLogin = viewModel::login,
+                onInputChanged = viewModel::clearLoginError,
+            )
+        } else {
+            AuthenticatedApp(viewModel)
+        }
     }
 }
 
@@ -180,6 +195,14 @@ private fun AuthenticatedApp(viewModel: HarvestViewModel) {
             navController = navController,
             startDestination = Routes.DASHBOARD,
             modifier = Modifier.padding(padding),
+            enterTransition = {
+                fadeIn(tween(160)) + slideInHorizontally(tween(200)) { fullWidth -> fullWidth / 12 }
+            },
+            exitTransition = { fadeOut(tween(110)) },
+            popEnterTransition = { fadeIn(tween(160)) },
+            popExitTransition = {
+                fadeOut(tween(120)) + slideOutHorizontally(tween(180)) { fullWidth -> fullWidth / 14 }
+            },
         ) {
             composable(Routes.DASHBOARD) {
                 DashboardScreen(
@@ -221,6 +244,7 @@ private fun AuthenticatedApp(viewModel: HarvestViewModel) {
                 MoreScreen(
                     onReports = { navController.navigate(Routes.REPORTS) },
                     onBackup = { navController.navigate(Routes.BACKUP) },
+                    onWorkTypes = { navController.navigate(Routes.WORK_TYPES) },
                     onSettings = { navController.navigate(Routes.SETTINGS) },
                     onAbout = { navController.navigate(Routes.ABOUT) },
                     onLogout = viewModel::logout,
@@ -228,6 +252,13 @@ private fun AuthenticatedApp(viewModel: HarvestViewModel) {
             }
             composable(Routes.SEARCH) { GlobalSearchScreen(uiState) { navController.navigate("customer/$it") } }
             composable(Routes.REPORTS) { ReportsScreen(uiState) { navController.navigate("customer/$it") } }
+            composable(Routes.WORK_TYPES) {
+                WorkTypeManagementScreen(
+                    workTypes = uiState.workTypes,
+                    onSave = viewModel::saveWorkType,
+                    onDelete = viewModel::deleteWorkType,
+                )
+            }
             composable(Routes.BACKUP) {
                 BackupScreen(viewModel::backupJson, viewModel::customersCsv, viewModel::paymentsCsv) { viewModel.restoreBackup(it) }
             }
@@ -302,9 +333,9 @@ private fun AuthenticatedApp(viewModel: HarvestViewModel) {
                 arguments = listOf(navArgument("customerId") { type = NavType.LongType }),
             ) { backStack ->
                 val customerId = backStack.arguments?.getLong("customerId") ?: 0
-                PaymentFormScreen(uiState, customerId.takeIf { it != 0L }, onSave = { work, amount, date, method, notes ->
-                    viewModel.addPayment(work, amount, date, method, notes) {
-                        navController.navigate("customer/${work.work.customerId}") { popUpTo("payment_form/$customerId") { inclusive = true } }
+                PaymentFormScreen(uiState, customerId.takeIf { it != 0L }, onSave = { customer, amount, date, method, notes ->
+                    viewModel.addCustomerPayment(customer.id, amount, date, method, notes) {
+                        navController.navigate("customer/${customer.id}") { popUpTo("payment_form/$customerId") { inclusive = true } }
                     }
                 }, onCancel = { navController.popBackStack() })
             }
@@ -386,6 +417,7 @@ private fun titleFor(route: String): String = when (route) {
     Routes.MORE -> "More"
     Routes.SEARCH -> "Search"
     Routes.REPORTS -> "Reports"
+    Routes.WORK_TYPES -> "Work Types"
     Routes.BACKUP -> "Backup & Export"
     Routes.SETTINGS -> "Settings"
     Routes.ABOUT -> "About"
