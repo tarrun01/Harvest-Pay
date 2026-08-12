@@ -1,0 +1,90 @@
+[
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-hdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/drawable_ic_launcher.xml.flat",
+        "source": "com.harvestpay.app-main-52:/drawable/ic_launcher.xml"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-hdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/drawable-nodpi_login_background.jpg.flat",
+        "source": "com.harvestpay.app-main-52:/drawable-nodpi/login_background.jpg"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/xml_file_paths.xml.flat",
+        "source": "com.harvestpay.app-main-52:/xml/file_paths.xml"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.harvestpay.app-main-52:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xxhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xxxhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xxxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/xml_data_extraction_rules.xml.flat",
+        "source": "com.harvestpay.app-main-52:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xxxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-mdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-mdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-mdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-mdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-hdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-hdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xhdpi_ic_launcher_foreground.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xhdpi/ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.harvestpay.app-debug-50:/mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "com.harvestpay.app-main-52:/mipmap-xhdpi/ic_launcher.webp"
+    }
+]
