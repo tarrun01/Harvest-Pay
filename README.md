@@ -112,7 +112,7 @@ Harvest Pay v1.2.1 was checked with:
 - Successful debug and release-optimized APK builds.
 - APK package, version and signature verification.
 
-## Developer
+## About the Developer
 
 **Tarun**
 
