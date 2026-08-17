@@ -1,118 +1,94 @@
-# Harvest Pay
+# Harvest Pay v1.2.2
 
-**Current version:** 1.2.1  
-**Platform:** Android 6.0 and newer  
-**Operation:** Offline-first; no server account required
+Harvest Pay is an offline-first Android ledger for a tractor owner who charges farmers by field size. It is built with Kotlin, Jetpack Compose, Material 3, Room, MVVM, Navigation Compose and DataStore.
 
-## About the app
+## What is included
 
-Harvest Pay is an offline Android business and payment ledger designed for tractor owners who provide agricultural services to farmers. It keeps customer, field, work-order and payment records together and calculates charges using the field size in Bigha.
+- Full-screen tractor login artwork with fast salted SHA-256 password verification, automatic legacy credential migration, user-changeable password, show/hide password, Remember Me, auto-lock (including Never) and logout
+- Dashboard totals for customers, fields, work types, Bigha, earnings, collections, pending balances, advance credit, diesel litres and diesel spending
+- Customer CRUD, optional opening/previous due, duplicate-mobile protection, search, sorting, call/WhatsApp actions and full profiles
+- Multiple fields per customer with decimal Bigha sizes
+- Work entries with managed work types, automatic per-Bigha rates, manual rate overrides, decimal rounds, discounts, extras and live charge calculation
+- Paid, partially paid, pending and advance states with customer-account ledgers; credit clears the oldest work first and carries forward automatically
+- Pending-payment queue, unrestricted customer payments, advance-credit tracking and WhatsApp reminder drafts
+- Local scheduled notifications using WorkManager
+- Filtered reports by period, customer, village and payment state
+- Individual work receipts plus consolidated, multi-page customer account PDFs with every field, work entry, payment and latest balance
+- Diesel entry management with quantity, amount, date, Paid/Unpaid status and purchaser name
+- Complete JSON backup/restore plus customer and payment CSV exports through Android's document picker
+- Light, dark and system themes; owner/business and default-rate settings
+- Near-instant navigation animations, eager background ledger loading, WAL database access and allocation-light calculations off the main UI thread
+- No Firebase, server, cloud database, analytics SDK or Internet permission
 
-The app can be used to:
+## Open and run
 
-- Add and manage customers and their fields.
-- Record decimal field sizes such as 0.5 Bigha.
-- Create and manage work types such as Cultivating and Rotavating.
-- Set an automatic rate per Bigha for each work type or enter a custom rate.
-- Record work orders, discounts, extra charges and payments.
-- Track paid, partially paid, pending and advance balances.
-- Automatically apply a customer's advance credit to later work.
-- View dashboard statistics, reports and complete customer histories.
-- Create payment reminders and share payment details through WhatsApp.
-- Export and restore local backups.
-- Protect the app with a local password and configurable auto-lock.
+1. Install current Android Studio with JDK 17 and Android SDK Platform 36.
+2. Open this `HarvestPay` folder in Android Studio.
+3. Allow Gradle sync to finish.
+4. Run the `app` configuration on an Android 6.0 (API 23) or newer device/emulator.
 
-All core business records remain on the device. WhatsApp, calling and file-sharing features open the corresponding installed Android application only when requested.
+Command-line verification:
 
-## Technology stack
+```bash
+./gradlew testDebugUnitTest lintDebug assembleDebug assemblePreview
+```
 
-- **Language:** Kotlin
-- **UI:** Jetpack Compose and Material 3
-- **Architecture:** MVVM with a shared Android ViewModel
-- **Database:** Room SQLite with Write-Ahead Logging (WAL)
-- **Settings:** Jetpack DataStore Preferences
-- **Navigation:** Navigation Compose
-- **Background work:** WorkManager
-- **Asynchronous processing:** Kotlin Coroutines and Flow
-- **Authentication:** Local salted SHA-256 password verification, with legacy PBKDF2 migration
-- **Build system:** Gradle Kotlin DSL
-- **Code optimization:** R8 code shrinking and resource shrinking in the optimized build
-- **Minimum Android version:** Android 6.0 (API 23)
-- **Target Android SDK:** API 36
+The generated debug APK is at `app/build/outputs/apk/debug/app-debug.apk`. The installable, release-optimized preview APK is at `app/build/outputs/apk/preview/app-preview.apk`.
 
 ## Download and install the APK
 
-Two APK variants are provided with the release:
+1. Download `HarvestPay-v1.2.2-optimized.apk` for normal daily use. Use the debug APK only for development or troubleshooting.
+2. On the Android phone, open the APK and allow installation from that file manager/browser if Android asks.
+3. Tap **Install**, then open Harvest Pay.
+4. If Android reports that the app conflicts with an existing installation, first export a Harvest Pay JSON backup, uninstall the old build, install v1.2.2, and restore the backup.
 
-- `HarvestPay-v1.2.1-optimized.apk` — recommended for normal daily use.
-- `HarvestPay-v1.2.1-debug.apk` — intended for development and troubleshooting.
+Both APKs have the same features and local data model. The optimized APK is smaller and uses R8 code/resource optimization; the debug APK keeps debugging information and is easier to inspect in Android Studio.
 
-Installation steps:
+| APK | Best for | Characteristics |
+|---|---|---|
+| Optimized | Normal phone use | Smaller, faster startup, R8 optimized, installable test signature |
+| Debug | Development/testing | Larger, debuggable, more diagnostic information |
 
-1. Download the recommended optimized APK to the Android device.
-2. If Android asks for permission, allow the browser or file manager to install apps from that source.
-3. Open the downloaded APK and select **Install**.
-4. Launch **Harvest Pay** after installation.
+## Initial access
 
-If Android reports that the app conflicts with an existing installation, the APK was signed with a different development key. Export a fresh backup from the existing app first, uninstall it, install v1.2.1, and then restore the backup. Uninstalling without a backup permanently removes the app's local records.
+Use the mobile number and initial password from the supplied Harvest Pay product brief. The password is never rendered or stored in readable form. Fresh installs verify the initial password with fast salted SHA-256 immediately; existing PBKDF2 credentials created by earlier versions are accepted once and automatically migrated after successful login.
 
-## Optimized APK vs debug APK
+## Architecture
 
-| Area | Optimized APK | Debug APK |
-| --- | --- | --- |
-| Recommended use | Everyday use | Development and troubleshooting |
-| Approximate size | 3 MB | 22 MB |
-| R8 optimization | Enabled | Disabled |
-| Unused code and resources | Removed | Retained |
-| Code obfuscation | Enabled | Disabled |
-| Android Studio debugging | Limited | Supported |
-| Performance | Smaller and generally faster | Slightly slower and larger |
-| App features and records | Same | Same |
+- `data/`: Room entities, DAO, database, repository and DataStore settings
+- `domain/`: monetary calculations and joined dashboard/ledger models
+- `security/`: local credential verification and Indian mobile normalization
+- `notification/`: WorkManager-based local reminders
+- `util/`: JSON/CSV backup, receipt PDF, formatting and external intents
+- `ui/`: Material 3 Compose screens, components, theme and navigation
 
-Both APKs contain the same Harvest Pay v1.2.1 functionality and use the same database rules. The optimized APK is the best choice unless a problem needs to be investigated through Android Studio.
+Room relationships preserve the requested model: one customer has many fields and work entries; a field has many work entries; and a work entry has many payments. Financial history is retained if a field is deleted. Deleting a customer cascades through that customer's complete ledger after confirmation.
 
-## What's new in v1.2.1
+## What’s new in v1.2.2
 
-- Added fast salted SHA-256 login verification from the first login.
-- Added automatic migration for passwords created with the older PBKDF2 method.
-- Enabled Room WAL mode for faster database reads and writes.
-- Moved ledger calculations away from the main UI thread.
-- Kept essential dashboard, settings and reminder data ready in memory.
-- Reduced repeated allocations in money, date and number formatting.
-- Optimized dashboard customer lookups and pending-payment sorting.
-- Added shorter, smoother login and navigation animations.
-- Added the new Harvest Pay tractor application icon.
-- Improved dark mode with deeper backgrounds, clearer surfaces and better contrast.
-- Replaced the dashboard “Namaste” text with a time-based Good Morning, Good Afternoon or Good Evening greeting.
-- Added the owner's name from Settings to the dashboard greeting.
-- Updated the dashboard heading to “Today’s Business Insight.”
-- Removed unwanted blank spaces from WhatsApp payment messages.
-- Made the login form 40% transparent so the background remains visible.
-- Removed the “All records stay on this device” footer from the login form.
-- Retained advance-payment support, managed work types, decimal Bigha values, the Never auto-lock option and password changing.
+- Added **Share PDF** to the Customer profile for a complete, consolidated customer report.
+- The customer PDF includes customer details, all fields and registered Bigha, field-wise work history and totals, total work, previous due, payments, outstanding balance, advance credit and notes.
+- Fixed the Work history **Message** action so its generated PDF opens directly in WhatsApp/WhatsApp Business when available, with a safe Android share fallback.
+- Added dashboard totals for **Total Diesel Used (Litres)** and **Total Diesel Amount Spent**.
+- Added **Diesel Entry** to Quick Add with create, edit and delete support, today’s date by default, Paid/Unpaid status and “Diesel brought by”.
+- Added duplicate diesel-entry protection so totals are not counted twice.
+- Added optional **Previous Due (₹)** to New Customer and Edit Customer.
+- Opening dues now participate in the customer ledger, total due, payment allocation, advance calculation, WhatsApp summary, CSV/JSON backup and customer PDF.
+- Added the farmer message and developer credit to About.
+- Upgraded the Room database to schema 3 with a safe v1.2.1-to-v1.2.2 migration.
+- Updated app version to **1.2.2** (version code 6).
 
-## Source code
+## Data and security notes
 
-The complete Android Studio project is distributed as `HarvestPay-v1.2.1-source.zip`.
+- Core operation is completely offline. WhatsApp, phone and sharesheet actions hand content to another installed app and never send automatically.
+- JSON and CSV exports can contain personal and financial data and are intentionally not encrypted so they remain portable. Store exported files securely.
+- This local login is an app access gate. For a higher-risk deployment, add device-backed key storage and SQLCipher database encryption before distributing outside the owner's device.
+- Android's automatic cloud backup is disabled; use the explicit Export Backup action instead.
 
-To open it:
+## Extending the app
 
-1. Extract the ZIP file.
-2. Open the extracted `HarvestPay-v1.2.1` folder in Android Studio.
-3. Allow Gradle synchronization to complete.
-4. Install Android SDK Platform 36 and use JDK 17 if Android Studio requests them.
-5. Run the `app` configuration on an Android device or emulator.
+The repository and shared ViewModel isolate persistence and calculations from UI. Add Room migrations whenever the schema version changes, keep money validation in the domain/ViewModel layer, and add regression tests for every new balance rule.
 
-## Verification
+## Developer
 
-Harvest Pay v1.2.1 was checked with:
-
-- 15 passing unit and regression tests.
-- Android lint with 0 errors.
-- Successful debug and release-optimized APK builds.
-- APK package, version and signature verification.
-
-## About the Developer
-
-**Tarun**
-
+Tarun
