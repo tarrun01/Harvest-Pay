@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.LocalGasStation
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
@@ -27,7 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,6 +52,8 @@ import com.harvestpay.app.ui.components.DateField
 import com.harvestpay.app.ui.components.DecimalField
 import com.harvestpay.app.ui.components.DropdownField
 import com.harvestpay.app.ui.components.EmptyState
+import com.harvestpay.app.ui.components.MetricGrid
+import com.harvestpay.app.util.formatBigha
 import com.harvestpay.app.util.formatDate
 import com.harvestpay.app.util.formatDateTime
 import com.harvestpay.app.util.formatMoney
@@ -66,6 +69,7 @@ fun PaymentsScreen(
     onAddPayment: (Long?) -> Unit,
     onMarkPaid: (Long) -> Unit,
     onAddReminder: (Long) -> Unit,
+    onOpenDieselPayments: () -> Unit,
     onDeletePayment: (PaymentEntity) -> Unit,
     onDeleteReminder: (ReminderEntity) -> Unit,
 ) {
@@ -89,11 +93,17 @@ fun PaymentsScreen(
         uiState.customerSummaries.filter { it.advance > 0.005 }
             .sortedByDescending { it.advance }
     }
+    val dieselPaid = remember(uiState.dieselEntries) {
+        uiState.dieselEntries.filter { it.paymentStatus.equals("Paid", ignoreCase = true) }.sumOf { it.totalAmount }
+    }
+    val dieselUnpaid = remember(uiState.dieselEntries) {
+        uiState.dieselEntries.filter { it.paymentStatus.equals("Unpaid", ignoreCase = true) }.sumOf { it.totalAmount }
+    }
 
     LazyColumn(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
-            TabRow(selectedTabIndex = tab, modifier = Modifier.padding(top = 10.dp)) {
-                listOf("Pending", "History", "Reminders", "Advances").forEachIndexed { index, title ->
+            PrimaryScrollableTabRow(selectedTabIndex = tab, modifier = Modifier.padding(top = 10.dp), edgePadding = 0.dp) {
+                listOf("Pending", "History", "Diesel Payments", "Reminders", "Advances").forEachIndexed { index, title ->
                     Tab(selected = tab == index, onClick = { tab = index }, text = { Text(title) })
                 }
             }
@@ -153,6 +163,55 @@ fun PaymentsScreen(
                 }
             }
         } else if (tab == 2) {
+            item {
+                MetricGrid(
+                    listOf(
+                        "Diesel Paid" to formatMoney(dieselPaid),
+                        "Diesel Unpaid" to formatMoney(dieselUnpaid),
+                    ),
+                )
+            }
+            item {
+                Button(onClick = onOpenDieselPayments, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.LocalGasStation, contentDescription = null)
+                    Text("Add or manage diesel")
+                }
+            }
+            if (uiState.dieselEntries.isEmpty()) {
+                item { EmptyState("No diesel payments", "Saved diesel purchases will appear here.") }
+            } else {
+                items(
+                    uiState.dieselEntries.sortedWith(
+                        compareByDescending<com.harvestpay.app.data.DieselEntryEntity> { it.entryDate }
+                            .thenByDescending { it.createdAt },
+                    ),
+                    key = { "diesel-payment-${it.id}" },
+                ) { entry ->
+                    Card(onClick = onOpenDieselPayments, modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Icon(Icons.Outlined.LocalGasStation, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text(
+                                    "${formatBigha(entry.litres)} Litres • ${formatMoney(entry.totalAmount)}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Text("${formatDate(entry.entryDate)} • ${entry.paymentStatus}")
+                                Text(
+                                    "Brought by ${entry.broughtBy}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (tab == 3) {
             if (reminders.isEmpty()) item { EmptyState("No reminders", "Schedule a local notification for a pending customer.") }
             else items(reminders, key = { "reminder-${it.id}" }) { reminder ->
                 val customer = uiState.customers.firstOrNull { it.id == reminder.customerId }

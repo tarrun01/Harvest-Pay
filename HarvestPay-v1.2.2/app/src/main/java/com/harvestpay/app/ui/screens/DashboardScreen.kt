@@ -81,7 +81,7 @@ fun DashboardScreen(
         item {
             MetricGrid(
                 listOf(
-                    "Customers served" to stats.totalCustomers.toString(),
+                    "Total Customers" to stats.totalCustomers.toString(),
                     "Total fields" to stats.totalFields.toString(),
                     "Bigha ploughed" to formatBigha(stats.totalBigha),
                     "Amount earned" to formatMoney(stats.totalEarned),

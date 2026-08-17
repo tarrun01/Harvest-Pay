@@ -71,6 +71,8 @@ Room relationships preserve the requested model: one customer has many fields an
 - Fixed the Work history **Message** action so its generated PDF opens directly in WhatsApp/WhatsApp Business when available, with a safe Android share fallback.
 - Added dashboard totals for **Total Diesel Used (Litres)** and **Total Diesel Amount Spent**.
 - Added **Diesel Entry** to Quick Add with create, edit and delete support, today’s date by default, Paid/Unpaid status and “Diesel brought by”.
+- Added a separate **Diesel Payments** tab in Payments with paid/unpaid totals and complete diesel purchase history.
+- Renamed the first dashboard metric from **Customers served** to **Total Customers**.
 - Added duplicate diesel-entry protection so totals are not counted twice.
 - Added optional **Previous Due (₹)** to New Customer and Edit Customer.
 - Opening dues now participate in the customer ledger, total due, payment allocation, advance calculation, WhatsApp summary, CSV/JSON backup and customer PDF.

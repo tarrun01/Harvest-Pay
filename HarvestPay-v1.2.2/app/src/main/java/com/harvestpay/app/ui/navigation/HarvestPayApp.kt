@@ -242,6 +242,7 @@ private fun AuthenticatedApp(viewModel: HarvestViewModel) {
                     onAddPayment = { navController.navigate("payment_form/${it ?: 0}") },
                     onMarkPaid = { viewModel.markCustomerPaid(it) },
                     onAddReminder = { navController.navigate("reminder_form/$it") },
+                    onOpenDieselPayments = { navController.navigate(Routes.DIESEL) },
                     onDeletePayment = viewModel::deletePayment,
                     onDeleteReminder = viewModel::deleteReminder,
                 )
