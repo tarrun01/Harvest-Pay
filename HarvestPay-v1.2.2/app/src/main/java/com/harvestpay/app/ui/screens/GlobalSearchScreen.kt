@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.harvestpay.app.domain.HarvestUiState
 import com.harvestpay.app.domain.PaymentStatus
+import com.harvestpay.app.data.appDisplayName
 import com.harvestpay.app.ui.components.DropdownField
 import com.harvestpay.app.ui.components.EmptyState
 import com.harvestpay.app.util.formatMoney
@@ -36,6 +37,7 @@ fun GlobalSearchScreen(uiState: HarvestUiState, onOpenCustomer: (Long) -> Unit) 
         val fields = summary.fields.joinToString(" ") { "${it.fieldName} ${it.location}" }
         val matches = query.isBlank() || listOf(
             summary.customer.name,
+            summary.customer.nickname,
             summary.customer.mobile,
             summary.customer.village,
             summary.customer.address,
@@ -66,7 +68,7 @@ fun GlobalSearchScreen(uiState: HarvestUiState, onOpenCustomer: (Long) -> Unit) 
             Card(onClick = { onOpenCustomer(summary.customer.id) }, modifier = Modifier.fillMaxWidth()) {
                 Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(Modifier.weight(1f)) {
-                        Text(summary.customer.name, fontWeight = FontWeight.Bold)
+                        Text(summary.customer.appDisplayName, fontWeight = FontWeight.Bold)
                         Text(listOf(summary.customer.village, summary.customer.mobile).filter(String::isNotBlank).joinToString(" • "))
                         Text(summary.fields.joinToString { it.fieldName }, style = MaterialTheme.typography.bodySmall)
                     }

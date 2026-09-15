@@ -51,6 +51,8 @@ import com.harvestpay.app.data.AppSettings
 import com.harvestpay.app.data.CustomerEntity
 import com.harvestpay.app.data.FieldEntity
 import com.harvestpay.app.data.PaymentEntity
+import com.harvestpay.app.data.appDisplayName
+import com.harvestpay.app.domain.BusinessCalculator
 import com.harvestpay.app.domain.CustomerSummary
 import com.harvestpay.app.domain.HarvestUiState
 import com.harvestpay.app.domain.WorkSummary
@@ -82,6 +84,7 @@ fun CustomersScreen(
         uiState.customerSummaries.filter { summary ->
             query.isBlank() || listOf(
                 summary.customer.name,
+                summary.customer.nickname,
                 summary.customer.mobile,
                 summary.customer.village,
                 summary.customer.address,
@@ -103,7 +106,7 @@ fun CustomersScreen(
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                label = { Text("Search name, mobile, village or address") },
+                label = { Text("Search name, nickname, mobile, village or address") },
                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
@@ -161,7 +164,7 @@ private fun CustomerListCard(
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column(Modifier.weight(1f)) {
-                    Text(summary.customer.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(summary.customer.appDisplayName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text(
                         listOf(summary.customer.village, summary.customer.mobile).filter(String::isNotBlank).joinToString(" • "),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -179,9 +182,11 @@ private fun CustomerListCard(
             }
             Text("${summary.fields.size} fields • ${formatBigha(summary.fields.sumOf { it.sizeBigha })} Bigha registered")
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.align(Alignment.End)) {
-                IconButton(onClick = { ShareUtils.dial(context, summary.customer.mobile) }) { Icon(Icons.Outlined.Call, "Call") }
-                IconButton(onClick = { ShareUtils.openWhatsApp(context, summary.customer.mobile, ShareUtils.paymentMessage(summary)) }) {
-                    Icon(Icons.Outlined.Chat, "WhatsApp")
+                if (summary.customer.mobile.isNotBlank()) {
+                    IconButton(onClick = { ShareUtils.dial(context, summary.customer.mobile) }) { Icon(Icons.Outlined.Call, "Call") }
+                    IconButton(onClick = { ShareUtils.openWhatsApp(context, summary.customer.mobile, ShareUtils.paymentMessage(summary)) }) {
+                        Icon(Icons.Outlined.Chat, "WhatsApp")
+                    }
                 }
                 IconButton(onClick = onEdit) { Icon(Icons.Outlined.Edit, "Edit") }
                 IconButton(onClick = onDelete) { Icon(Icons.Outlined.Delete, "Delete", tint = MaterialTheme.colorScheme.error) }
@@ -197,6 +202,7 @@ fun CustomerFormScreen(
     onCancel: () -> Unit,
 ) {
     var name by remember(existing) { mutableStateOf(existing?.name.orEmpty()) }
+    var nickname by remember(existing) { mutableStateOf(existing?.nickname.orEmpty()) }
     var mobile by remember(existing) { mutableStateOf(existing?.mobile.orEmpty()) }
     var address by remember(existing) { mutableStateOf(existing?.address.orEmpty()) }
     var village by remember(existing) { mutableStateOf(existing?.village.orEmpty()) }
@@ -210,12 +216,29 @@ fun CustomerFormScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { Text(if (existing == null) "Add customer" else "Edit customer", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 16.dp)) }
-        item { OutlinedTextField(name, { name = it }, label = { Text("Customer name *") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    name,
+                    { name = it },
+                    label = { Text("Customer name *") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                OutlinedTextField(
+                    nickname,
+                    { nickname = it },
+                    label = { Text("Nickname") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
         item {
             OutlinedTextField(
                 mobile,
                 { value -> if (value.length <= 13) mobile = value.filter { it.isDigit() || it == '+' } },
-                label = { Text("Mobile number *") },
+                label = { Text("Mobile number (optional)") },
                 prefix = { Text("+91 ") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 singleLine = true,
@@ -236,6 +259,7 @@ fun CustomerFormScreen(
                             CustomerEntity(
                                 id = existing?.id ?: 0,
                                 name = name,
+                                nickname = nickname,
                                 mobile = mobile,
                                 address = address,
                                 village = village,
@@ -331,21 +355,25 @@ fun CustomerProfileScreen(
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Column(Modifier.weight(1f)) {
-                            Text(summary.customer.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                            Text(summary.customer.mobile, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(summary.customer.appDisplayName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            if (summary.customer.mobile.isNotBlank()) {
+                                Text(summary.customer.mobile, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                             if (summary.customer.village.isNotBlank()) Text(summary.customer.village)
                             if (summary.customer.address.isNotBlank()) Text(summary.customer.address, style = MaterialTheme.typography.bodySmall)
                         }
                         IconButton(onClick = onEdit) { Icon(Icons.Outlined.Edit, "Edit customer") }
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilledTonalButton(onClick = { ShareUtils.dial(context, summary.customer.mobile) }, modifier = Modifier.weight(1f)) {
-                            Icon(Icons.Outlined.Call, null); Text("Call")
+                    if (summary.customer.mobile.isNotBlank()) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilledTonalButton(onClick = { ShareUtils.dial(context, summary.customer.mobile) }, modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Outlined.Call, null); Text("Call")
+                            }
+                            FilledTonalButton(
+                                onClick = { ShareUtils.openWhatsApp(context, summary.customer.mobile, ShareUtils.paymentMessage(summary)) },
+                                modifier = Modifier.weight(1f),
+                            ) { Icon(Icons.Outlined.Chat, null); Text("WhatsApp") }
                         }
-                        FilledTonalButton(
-                            onClick = { ShareUtils.openWhatsApp(context, summary.customer.mobile, ShareUtils.paymentMessage(summary)) },
-                            modifier = Modifier.weight(1f),
-                        ) { Icon(Icons.Outlined.Chat, null); Text("WhatsApp") }
                     }
                     OutlinedButton(
                         onClick = { ReceiptGenerator.shareCustomer(context, summary, settings) },
@@ -491,8 +519,10 @@ private fun WorkHistoryCard(
             }
             Text(
                 "${formatDate(work.work.workDate)} • ${work.work.workType} • " +
-                    "${formatBigha(work.work.sizeBigha)} Bigha @ ${formatMoney(work.work.ratePerBigha)} • " +
-                    "${formatBigha(work.work.roundMultiplier)} rounds",
+                    "Field size ${formatBigha(work.work.sizeBigha)} Bigha • " +
+                    "Round ${formatBigha(work.work.roundMultiplier)} • " +
+                    "Work done ${formatBigha(BusinessCalculator.workDoneBigha(work.work.sizeBigha, work.work.roundMultiplier))} Bigha • " +
+                    "${formatMoney(work.work.ratePerBigha)} / Bigha / Round",
             )
             Text("Paid ${formatMoney(work.paid)} • Pending ${formatMoney(work.pending)}", style = MaterialTheme.typography.bodySmall)
             if (payments.isNotEmpty()) {

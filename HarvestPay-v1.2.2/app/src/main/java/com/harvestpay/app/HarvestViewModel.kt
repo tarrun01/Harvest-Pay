@@ -205,12 +205,15 @@ class HarvestViewModel(
             when {
                 customer.name.isBlank() -> messagesChannel.send("Customer name is required.")
                 customer.previousDue < 0 -> messagesChannel.send("Previous due cannot be negative.")
-                !LocalAuth.isValidIndianMobile(mobile) -> messagesChannel.send("Enter a valid Indian mobile number.")
-                repository.mobileExists(mobile, customer.id) -> messagesChannel.send("A customer with this mobile number already exists.")
+                mobile.isNotBlank() && !LocalAuth.isValidIndianMobile(mobile) ->
+                    messagesChannel.send("Enter a valid Indian mobile number or leave it empty.")
+                mobile.isNotBlank() && repository.mobileExists(mobile, customer.id) ->
+                    messagesChannel.send("A customer with this mobile number already exists.")
                 else -> runCatching {
                     repository.saveCustomer(
                         customer.copy(
                             name = customer.name.trim(),
+                            nickname = customer.nickname.trim(),
                             mobile = mobile,
                             previousDue = BusinessCalculator.money(customer.previousDue),
                         ),
@@ -244,10 +247,11 @@ class HarvestViewModel(
         onSaved: (Long) -> Unit = {},
     ) {
         if (
-            work.sizeBigha <= 0 || work.ratePerBigha < 0 || work.roundMultiplier <= 0 ||
+            work.sizeBigha <= 0 || work.ratePerBigha < 0 ||
+            !BusinessCalculator.isSupportedRound(work.roundMultiplier) ||
             work.totalAmount < 0 || initialPaid < 0
         ) {
-            postMessage("Work and payment values cannot be negative; size and rounds must be greater than zero.")
+            postMessage("Enter valid work values and choose Round 0.5, 1, 1.5 or 2.")
             return
         }
         viewModelScope.launch {

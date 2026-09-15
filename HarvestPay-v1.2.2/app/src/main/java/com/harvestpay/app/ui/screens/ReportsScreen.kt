@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.harvestpay.app.domain.HarvestUiState
+import com.harvestpay.app.domain.BusinessCalculator
 import com.harvestpay.app.domain.PaymentStatus
 import com.harvestpay.app.ui.components.DropdownField
 import com.harvestpay.app.ui.components.DateField
@@ -134,7 +135,9 @@ fun ReportsScreen(uiState: HarvestUiState, onOpenCustomer: (Long) -> Unit) {
                     "Earnings" to formatMoney(totalEarned),
                     "Received" to formatMoney(totalReceived),
                     "Pending" to formatMoney((totalEarned - work.sumOf { it.paid }).coerceAtLeast(0.0)),
-                    "Bigha ploughed" to formatBigha(work.sumOf { it.work.sizeBigha }),
+                    "Bigha ploughed" to formatBigha(
+                        work.sumOf { BusinessCalculator.workDoneBigha(it.work.sizeBigha, it.work.roundMultiplier) },
+                    ),
                     "Jobs" to work.size.toString(),
                     "Customers" to work.map { it.work.customerId }.distinct().size.toString(),
                 ),

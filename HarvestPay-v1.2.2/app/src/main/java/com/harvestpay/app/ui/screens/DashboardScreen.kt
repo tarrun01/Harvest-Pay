@@ -34,6 +34,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.harvestpay.app.data.AppSettings
+import com.harvestpay.app.data.appDisplayName
+import com.harvestpay.app.domain.BusinessCalculator
 import com.harvestpay.app.domain.CustomerSummary
 import com.harvestpay.app.domain.HarvestUiState
 import com.harvestpay.app.ui.components.EmptyState
@@ -109,7 +111,7 @@ fun DashboardScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Column(Modifier.weight(1f)) {
-                            Text(customer.name, fontWeight = FontWeight.SemiBold)
+                            Text(customer.appDisplayName, fontWeight = FontWeight.SemiBold)
                             Text(
                                 listOf(customer.village, customer.mobile).filter(String::isNotBlank).joinToString(" • "),
                                 style = MaterialTheme.typography.bodySmall,
@@ -132,11 +134,11 @@ fun DashboardScreen(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text(work.customer?.name ?: "Customer", fontWeight = FontWeight.SemiBold)
+                            Text(work.customer?.appDisplayName ?: "Customer", fontWeight = FontWeight.SemiBold)
                             Text(formatMoney(work.work.totalAmount), fontWeight = FontWeight.Bold)
                         }
                         Text(
-                            "${work.field?.fieldName ?: "Field"} • ${formatBigha(work.work.sizeBigha)} Bigha • ${formatDate(work.work.workDate)}",
+                            "${work.field?.fieldName ?: "Field"} • Field size ${formatBigha(work.work.sizeBigha)} Bigha • Round ${formatBigha(work.work.roundMultiplier)} • ${formatBigha(BusinessCalculator.workDoneBigha(work.work.sizeBigha, work.work.roundMultiplier))} Bigha worked • ${formatDate(work.work.workDate)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -184,8 +186,10 @@ fun PendingCustomerCard(
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
-                    Text(summary.customer.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text(summary.customer.mobile, style = MaterialTheme.typography.bodySmall)
+                    Text(summary.customer.appDisplayName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    if (summary.customer.mobile.isNotBlank()) {
+                        Text(summary.customer.mobile, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
                 Text(formatMoney(summary.pending), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
@@ -200,12 +204,14 @@ fun PendingCustomerCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { ShareUtils.dial(context, summary.customer.mobile) }) {
-                    Icon(Icons.Outlined.Call, contentDescription = "Call")
+                if (summary.customer.mobile.isNotBlank()) {
+                    IconButton(onClick = { ShareUtils.dial(context, summary.customer.mobile) }) {
+                        Icon(Icons.Outlined.Call, contentDescription = "Call")
+                    }
+                    IconButton(onClick = {
+                        ShareUtils.openWhatsApp(context, summary.customer.mobile, ShareUtils.paymentMessage(summary))
+                    }) { Icon(Icons.Outlined.Chat, contentDescription = "WhatsApp reminder") }
                 }
-                IconButton(onClick = {
-                    ShareUtils.openWhatsApp(context, summary.customer.mobile, ShareUtils.paymentMessage(summary))
-                }) { Icon(Icons.Outlined.Chat, contentDescription = "WhatsApp reminder") }
                 OutlinedButton(onClick = onView, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Outlined.ReceiptLong, contentDescription = null)
                     Text("Details")

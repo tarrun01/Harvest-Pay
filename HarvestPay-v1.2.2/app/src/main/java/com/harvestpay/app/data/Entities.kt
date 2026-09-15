@@ -8,11 +8,13 @@ import androidx.room.ColumnInfo
 
 @Entity(
     tableName = "customers",
-    indices = [Index(value = ["mobile"], unique = true), Index("name"), Index("village")],
+    indices = [Index("mobile"), Index("name"), Index("village")],
 )
 data class CustomerEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
+    /** Internal-only label used to distinguish customers with similar names. */
+    @ColumnInfo(defaultValue = "''") val nickname: String = "",
     val mobile: String,
     val address: String = "",
     val village: String = "",
@@ -21,6 +23,9 @@ data class CustomerEntity(
     @ColumnInfo(defaultValue = "0.0") val previousDue: Double = 0.0,
     val createdAt: Long = System.currentTimeMillis(),
 )
+
+val CustomerEntity.appDisplayName: String
+    get() = nickname.trim().takeIf(String::isNotBlank)?.let { "$name ($it)" } ?: name
 
 @Entity(
     tableName = "fields",

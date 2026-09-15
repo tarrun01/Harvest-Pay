@@ -8,7 +8,7 @@ Harvest Pay is an offline-first Android ledger for a tractor owner who charges f
 - Dashboard totals for customers, fields, work types, Bigha, earnings, collections, pending balances, advance credit, diesel litres and diesel spending
 - Customer CRUD, optional opening/previous due, duplicate-mobile protection, search, sorting, call/WhatsApp actions and full profiles
 - Multiple fields per customer with decimal Bigha sizes
-- Work entries with managed work types, automatic per-Bigha rates, manual rate overrides, decimal rounds, discounts, extras and live charge calculation
+- Work entries with managed work types, automatic per-Bigha rates, manual rate overrides, fixed 0.5/1/1.5/2 Round selection, discounts, extras and live charge calculation
 - Paid, partially paid, pending and advance states with customer-account ledgers; credit clears the oldest work first and carries forward automatically
 - Pending-payment queue, unrestricted customer payments, advance-credit tracking and WhatsApp reminder drafts
 - Local scheduled notifications using WorkManager
@@ -73,12 +73,18 @@ Room relationships preserve the requested model: one customer has many fields an
 - Added **Diesel Entry** to Quick Add with create, edit and delete support, today’s date by default, Paid/Unpaid status and “Diesel brought by”.
 - Added a separate **Diesel Payments** tab in Payments with paid/unpaid totals and complete diesel purchase history.
 - Renamed the first dashboard metric from **Customers served** to **Total Customers**.
+- Made the customer mobile number optional and safely supports multiple customers without phone numbers.
+- Call and WhatsApp actions are hidden when a customer has no mobile number.
+- Added an internal-only customer nickname for distinguishing duplicate or similar names; nicknames never appear in PDFs, reports or shared customer output.
+- Round is now a keyboard-free selector limited to **0.5, 1, 1.5 and 2**.
+- Work-done totals and price use **Field Bigha × Round**, while every individual entry preserves its original field size.
+- Statements, individual work PDFs and consolidated customer PDFs show **Field Size** and **Round** separately; calculated Work Done is shown without replacing the original field size.
 - Added duplicate diesel-entry protection so totals are not counted twice.
 - Added optional **Previous Due (₹)** to New Customer and Edit Customer.
 - Opening dues now participate in the customer ledger, total due, payment allocation, advance calculation, WhatsApp summary, CSV/JSON backup and customer PDF.
 - Added the farmer message and developer credit to About.
-- Upgraded the Room database to schema 3 with a safe v1.2.1-to-v1.2.2 migration.
-- Updated app version to **1.2.2** (version code 6).
+- Upgraded the Room database to schema 5 with safe migrations for diesel, previous-due, optional customer-mobile and nickname support.
+- Updated app version to **1.2.2** (version code 9).
 
 ## Data and security notes
 

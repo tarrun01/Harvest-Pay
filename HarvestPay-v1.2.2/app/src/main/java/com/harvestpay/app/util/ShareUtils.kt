@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.core.net.toUri
+import com.harvestpay.app.domain.BusinessCalculator
 import com.harvestpay.app.domain.CustomerSummary
 import com.harvestpay.app.domain.WorkSummary
 import java.net.URLEncoder
@@ -16,7 +17,9 @@ object ShareUtils {
             listOf(
                 "Field: ${it.field?.fieldName ?: "Field"}",
                 "Field Size: ${formatBigha(it.work.sizeBigha)} Bigha",
-                "Rate: ${formatMoney(it.work.ratePerBigha)}/Bigha",
+                "Round: ${formatBigha(it.work.roundMultiplier)}",
+                "Work Done: ${formatBigha(BusinessCalculator.workDoneBigha(it.work.sizeBigha, it.work.roundMultiplier))} Bigha",
+                "Rate: ${formatMoney(it.work.ratePerBigha)}/Bigha/Round",
                 "Total Amount: ${formatMoney(it.work.totalAmount)}",
                 "Amount Paid: ${formatMoney(it.paid)}",
                 "Pending Amount: ${formatMoney(it.pending)}",
@@ -48,6 +51,10 @@ object ShareUtils {
     }
 
     fun openWhatsApp(context: Context, mobile: String, message: String) {
+        if (mobile.isBlank()) {
+            Toast.makeText(context, "Mobile number is not available for this customer", Toast.LENGTH_SHORT).show()
+            return
+        }
         val digits = mobile.filter(Char::isDigit).let {
             when {
                 it.length == 10 -> "91$it"
@@ -70,6 +77,10 @@ object ShareUtils {
     }
 
     fun dial(context: Context, mobile: String) {
+        if (mobile.isBlank()) {
+            Toast.makeText(context, "Mobile number is not available for this customer", Toast.LENGTH_SHORT).show()
+            return
+        }
         runCatching {
             context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$mobile".toUri()))
         }.onFailure {

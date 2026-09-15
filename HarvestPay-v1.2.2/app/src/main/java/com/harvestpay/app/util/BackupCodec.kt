@@ -17,7 +17,7 @@ import org.json.JSONObject
 data class BackupBundle(val snapshot: DatabaseSnapshot, val settings: AppSettings)
 
 object BackupCodec {
-    private const val SCHEMA_VERSION = 3
+    private const val SCHEMA_VERSION = 4
 
     fun encode(bundle: BackupBundle): String = JSONObject().apply {
         put("app", "Harvest Pay")
@@ -118,7 +118,7 @@ object BackupCodec {
     }
 
     private fun CustomerEntity.json() = JSONObject().apply {
-        put("id", id); put("name", name); put("mobile", mobile); put("address", address)
+        put("id", id); put("name", name); put("nickname", nickname); put("mobile", mobile); put("address", address)
         put("village", village); put("notes", notes); put("previousDue", previousDue)
         put("createdAt", createdAt)
     }
@@ -168,6 +168,7 @@ object BackupCodec {
 
     private fun JSONObject.customer() = CustomerEntity(
         id = getLong("id"), name = getString("name"), mobile = getString("mobile"),
+        nickname = optString("nickname"),
         address = optString("address"), village = optString("village"), notes = optString("notes"),
         previousDue = optDouble("previousDue", 0.0),
         createdAt = optLong("createdAt", System.currentTimeMillis()),

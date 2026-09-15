@@ -64,6 +64,7 @@ import androidx.navigation.navArgument
 import com.harvestpay.app.AuthState
 import com.harvestpay.app.HarvestViewModel
 import com.harvestpay.app.data.CustomerEntity
+import com.harvestpay.app.data.appDisplayName
 import com.harvestpay.app.ui.components.EmptyState
 import com.harvestpay.app.ui.screens.AboutScreen
 import com.harvestpay.app.ui.screens.BackupScreen
@@ -426,7 +427,7 @@ private fun CustomerPickerScreen(customers: List<CustomerEntity>, action: String
         items(customers.sortedBy { it.name }, key = { it.id }) { customer ->
             Card(onClick = { onPick(customer) }, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
-                    Text(customer.name, fontWeight = FontWeight.Bold)
+                    Text(customer.appDisplayName, fontWeight = FontWeight.Bold)
                     Text(listOf(customer.village, customer.mobile).filter(String::isNotBlank).joinToString(" • "))
                 }
             }

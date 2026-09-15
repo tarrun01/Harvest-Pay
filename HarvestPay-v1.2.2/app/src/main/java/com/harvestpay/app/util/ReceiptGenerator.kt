@@ -10,6 +10,7 @@ import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import androidx.core.content.FileProvider
 import com.harvestpay.app.data.AppSettings
+import com.harvestpay.app.domain.BusinessCalculator
 import com.harvestpay.app.domain.CustomerSummary
 import com.harvestpay.app.domain.WorkSummary
 import java.io.File
@@ -22,6 +23,8 @@ data class ReceiptData(
     val mobile: String,
     val fieldName: String,
     val fieldSize: Double,
+    val round: Double,
+    val workDoneBigha: Double,
     val rate: Double,
     val workDate: Long,
     val total: Double,
@@ -39,6 +42,11 @@ object ReceiptGenerator {
         mobile = summary.customer?.mobile.orEmpty(),
         fieldName = summary.field?.fieldName ?: "Field",
         fieldSize = summary.work.sizeBigha,
+        round = summary.work.roundMultiplier,
+        workDoneBigha = BusinessCalculator.workDoneBigha(
+            summary.work.sizeBigha,
+            summary.work.roundMultiplier,
+        ),
         rate = summary.work.ratePerBigha,
         workDate = summary.work.workDate,
         total = summary.work.totalAmount,
@@ -70,18 +78,24 @@ object ReceiptGenerator {
             paint.color = android.graphics.Color.DKGRAY
             paint.textSize = 14f
             var y = 174f
-            val rows = listOf(
-                "Customer Name" to data.customerName,
-                "Mobile Number" to data.mobile,
-                "Field Name" to data.fieldName,
-                "Field Size" to "${formatBigha(data.fieldSize)} Bigha",
-                "Rate per Bigha" to formatMoney(data.rate),
-                "Work Date" to formatDate(data.workDate),
-                "Total Amount" to formatMoney(data.total),
-                "Paid Amount" to formatMoney(data.paid),
-                "Pending Amount" to formatMoney(data.pending),
-                "Payment Status" to data.status,
-            )
+            val rows = buildList {
+                add("Customer Name" to data.customerName)
+                if (data.mobile.isNotBlank()) add("Mobile Number" to data.mobile)
+                addAll(
+                    listOf(
+                        "Field Name" to data.fieldName,
+                        "Field Size" to "${formatBigha(data.fieldSize)} Bigha",
+                        "Round" to formatBigha(data.round),
+                        "Work Done (Field Size × Round)" to "${formatBigha(data.workDoneBigha)} Bigha",
+                        "Rate per Bigha per Round" to formatMoney(data.rate),
+                        "Work Date" to formatDate(data.workDate),
+                        "Total Amount" to formatMoney(data.total),
+                        "Paid Amount" to formatMoney(data.paid),
+                        "Pending Amount" to formatMoney(data.pending),
+                        "Payment Status" to data.status,
+                    ),
+                )
+            }
             rows.forEach { (label, value) ->
                 paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 canvas.drawText(label, 70f, y, paint)
@@ -146,7 +160,7 @@ object ReceiptGenerator {
         try {
             report.section("Customer details")
             report.row("Customer", summary.customer.name)
-            report.row("Mobile", summary.customer.mobile)
+            if (summary.customer.mobile.isNotBlank()) report.row("Mobile", summary.customer.mobile)
             if (summary.customer.village.isNotBlank()) report.row("Village", summary.customer.village)
             if (summary.customer.address.isNotBlank()) report.row("Address", summary.customer.address)
             report.row("Fields", summary.fields.size.toString())
@@ -185,6 +199,10 @@ object ReceiptGenerator {
                     report.workHeader()
                     fieldWork.forEach(report::workRow)
                     report.row(
+                        "Field work done",
+                        "${formatBigha(fieldWork.sumOf { BusinessCalculator.workDoneBigha(it.work.sizeBigha, it.work.roundMultiplier) })} Bigha",
+                    )
+                    report.row(
                         "Field total (${fieldWork.size} entries)",
                         formatMoney(fieldWork.sumOf { it.work.totalAmount }),
                         emphasize = true,
@@ -200,6 +218,10 @@ object ReceiptGenerator {
                 report.subsection("Other / unassigned work")
                 report.workHeader()
                 unassigned.distinctBy { it.work.id }.sortedBy { it.work.workDate }.forEach(report::workRow)
+                report.row(
+                    "Other work done",
+                    "${formatBigha(unassigned.distinctBy { it.work.id }.sumOf { BusinessCalculator.workDoneBigha(it.work.sizeBigha, it.work.roundMultiplier) })} Bigha",
+                )
                 report.row(
                     "Other work total",
                     formatMoney(unassigned.distinctBy { it.work.id }.sumOf { it.work.totalAmount }),
@@ -331,8 +353,9 @@ private class CustomerPdfWriter(
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.textSize = 9f
         canvas!!.drawText("Date", left + 5f, y, paint)
-        canvas!!.drawText("Work type", left + 85f, y, paint)
-        canvas!!.drawText("Area", left + 285f, y, paint)
+        canvas!!.drawText("Work type", left + 78f, y, paint)
+        canvas!!.drawText("Field size", left + 245f, y, paint)
+        canvas!!.drawText("Round", left + 335f, y, paint)
         paint.textAlign = Paint.Align.RIGHT
         canvas!!.drawText("Charges", right - 5f, y, paint)
         paint.textAlign = Paint.Align.LEFT
@@ -345,8 +368,9 @@ private class CustomerPdfWriter(
         paint.typeface = Typeface.DEFAULT
         paint.textSize = 9.5f
         canvas!!.drawText(formatDate(work.work.workDate), left + 5f, y, paint)
-        canvas!!.drawText(ellipsize(work.work.workType, 175f), left + 85f, y, paint)
-        canvas!!.drawText("${formatBigha(work.work.sizeBigha)} Bigha", left + 285f, y, paint)
+        canvas!!.drawText(ellipsize(work.work.workType, 155f), left + 78f, y, paint)
+        canvas!!.drawText("${formatBigha(work.work.sizeBigha)} Bigha", left + 245f, y, paint)
+        canvas!!.drawText(formatBigha(work.work.roundMultiplier), left + 335f, y, paint)
         paint.textAlign = Paint.Align.RIGHT
         canvas!!.drawText(formatMoney(work.work.totalAmount), right - 5f, y, paint)
         paint.textAlign = Paint.Align.LEFT

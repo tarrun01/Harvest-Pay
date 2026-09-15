@@ -14,7 +14,7 @@ android {
         applicationId = "com.harvestpay.app"
         minSdk = 23
         targetSdk = 36
-        versionCode = 6
+        versionCode = 9
         versionName = "1.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

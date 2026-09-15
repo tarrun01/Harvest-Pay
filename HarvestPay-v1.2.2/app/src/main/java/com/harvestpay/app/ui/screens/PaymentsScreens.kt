@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.harvestpay.app.data.CustomerEntity
+import com.harvestpay.app.data.appDisplayName
 import com.harvestpay.app.data.PaymentEntity
 import com.harvestpay.app.data.ReminderEntity
 import com.harvestpay.app.domain.HarvestUiState
@@ -80,7 +81,10 @@ fun PaymentsScreen(
     var deleteReminder by remember { mutableStateOf<ReminderEntity?>(null) }
     val pending = remember(uiState.customerSummaries, search, sort) {
         uiState.customerSummaries.filter {
-            it.pending > 0.005 && (search.isBlank() || it.customer.name.contains(search, true) || it.customer.mobile.contains(search))
+            it.pending > 0.005 && (
+                search.isBlank() || it.customer.name.contains(search, true) ||
+                    it.customer.nickname.contains(search, true) || it.customer.mobile.contains(search)
+                )
         }.let { list ->
             when (sort) {
                 "Oldest work" -> list.sortedBy { it.lastWorkDate ?: Long.MAX_VALUE }
@@ -155,7 +159,7 @@ fun PaymentsScreen(
                     Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text(formatMoney(payment.amount), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text("${customer?.name ?: "Customer"} • ${formatDate(payment.paymentDate)}")
+                            Text("${customer?.appDisplayName ?: "Customer"} • ${formatDate(payment.paymentDate)}")
                             Text(payment.paymentMethod + if (payment.notes.isNotBlank()) " • ${payment.notes}" else "", style = MaterialTheme.typography.bodySmall)
                         }
                         IconButton(onClick = { deletePayment = payment }) { Icon(Icons.Outlined.Delete, "Delete", tint = MaterialTheme.colorScheme.error) }
@@ -218,7 +222,7 @@ fun PaymentsScreen(
                 Card(Modifier.fillMaxWidth()) {
                     Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text(customer?.name ?: "Customer", fontWeight = FontWeight.Bold)
+                            Text(customer?.appDisplayName ?: "Customer", fontWeight = FontWeight.Bold)
                             Text(formatDateTime(reminder.reminderAt))
                             Text(reminder.message, style = MaterialTheme.typography.bodySmall)
                         }
@@ -244,8 +248,10 @@ fun PaymentsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Column {
-                                Text(summary.customer.name, fontWeight = FontWeight.Bold)
-                                Text(summary.customer.mobile, style = MaterialTheme.typography.bodySmall)
+                                Text(summary.customer.appDisplayName, fontWeight = FontWeight.Bold)
+                                if (summary.customer.mobile.isNotBlank()) {
+                                    Text(summary.customer.mobile, style = MaterialTheme.typography.bodySmall)
+                                }
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
@@ -312,9 +318,9 @@ fun PaymentFormScreen(
                 { selected ->
                     val account = uiState.customerSummaries.first { it.customer.id == selected.id }
                     when {
-                        account.pending > 0.005 -> "${selected.name} • ${formatMoney(account.pending)} pending"
-                        account.advance > 0.005 -> "${selected.name} • ${formatMoney(account.advance)} advance"
-                        else -> "${selected.name} • settled"
+                        account.pending > 0.005 -> "${selected.appDisplayName} • ${formatMoney(account.pending)} pending"
+                        account.advance > 0.005 -> "${selected.appDisplayName} • ${formatMoney(account.advance)} advance"
+                        else -> "${selected.appDisplayName} • settled"
                     }
                 },
                 { selected ->
@@ -411,7 +417,7 @@ fun ReminderFormScreen(
 
     LazyColumn(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text("Payment reminder", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 16.dp)) }
-        item { Text("${customer.name} • ${formatMoney(pendingAmount)} pending", color = MaterialTheme.colorScheme.error) }
+        item { Text("${customer.appDisplayName} • ${formatMoney(pendingAmount)} pending", color = MaterialTheme.colorScheme.error) }
         item { DateField("Reminder date", date, { date = it }) }
         item { DropdownField("Reminder time", hour, listOf(8, 9, 12, 17, 19), { h -> if (h < 12) "$h:00 AM" else if (h == 12) "12:00 PM" else "${h - 12}:00 PM" }, { hour = it }) }
         item { OutlinedTextField(message, { message = it }, label = { Text("Notification message") }, minLines = 3, modifier = Modifier.fillMaxWidth()) }

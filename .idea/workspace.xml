@@ -10,15 +10,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3baaeed0-ee8c-4143-9b7a-7b064ee21806" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.13/checksums/checksums.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.13/executionHistory/executionHistory.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.13/executionHistory/executionHistory.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.13/fileHashes/fileHashes.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.13/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.13/fileHashes/resourceHashesCache.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.kotlin/sessions/kotlin-compiler-10084133633342102084.salive" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2-diesel-payments-source.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2-optimized.apk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/HarvestViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/HarvestViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/data/AppDatabase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/data/AppDatabase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/data/Entities.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/data/Entities.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/domain/BusinessCalculator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/domain/BusinessCalculator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/navigation/HarvestPayApp.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/navigation/HarvestPayApp.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/CustomerScreens.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/CustomerScreens.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/DashboardScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/DashboardScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/GlobalSearchScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/GlobalSearchScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/PaymentsScreens.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/PaymentsScreens.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/ReportsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/ReportsScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/WorkScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/ui/screens/WorkScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/util/BackupCodec.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/util/BackupCodec.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/util/ReceiptGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/util/ReceiptGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/util/ShareUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/HarvestPay-v1.2.2/app/src/main/java/com/harvestpay/app/util/ShareUtils.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,7 +40,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[LocalEmulator::path=/Users/tarun/.android/avd/Medium_Phone.avd]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -37,10 +49,10 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 8,
-  "fromUser": false
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8,
+  &quot;fromUser&quot;: false
+}</component>
   <component name="ProjectId" id="3HpPhfHqYzj8Kk4PivuFsEWYoVS" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -53,6 +65,7 @@
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "android.gradle.sync.needed": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "main",

@@ -12,6 +12,12 @@ import kotlin.math.min
 
 object BusinessCalculator {
     private const val EPSILON = 0.005
+    val supportedRounds = listOf(0.5, 1.0, 1.5, 2.0)
+
+    fun isSupportedRound(value: Double): Boolean = supportedRounds.any { kotlin.math.abs(it - value) < EPSILON }
+
+    fun workDoneBigha(sizeBigha: Double, rounds: Double): Double =
+        money(sizeBigha.coerceAtLeast(0.0) * rounds.coerceAtLeast(0.0))
 
     fun subtotal(sizeBigha: Double, ratePerBigha: Double, rounds: Double = 1.0): Double =
         money(sizeBigha * ratePerBigha * rounds.coerceAtLeast(0.0))
@@ -81,7 +87,9 @@ object BusinessCalculator {
                 fields = fieldsByCustomer[customer.id].orEmpty(),
                 work = customerWork,
                 payments = customerPayments,
-                totalBigha = customerWork.sumOf { it.work.sizeBigha },
+                totalBigha = customerWork.sumOf {
+                    workDoneBigha(it.work.sizeBigha, it.work.roundMultiplier)
+                },
                 totalBill = totalBill,
                 totalPaid = totalPaid,
                 pending = pending(totalBill, totalPaid),
@@ -108,7 +116,7 @@ object BusinessCalculator {
             stats = DashboardStats(
                 totalCustomers = customers.size,
                 totalFields = fields.size,
-                totalBigha = workEntries.sumOf { it.sizeBigha },
+                totalBigha = workEntries.sumOf { workDoneBigha(it.sizeBigha, it.roundMultiplier) },
                 totalEarned = totalEarned,
                 totalReceived = totalReceived,
                 totalPending = money(customerSummaries.sumOf { it.pending }),

@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
@@ -31,12 +32,14 @@ import com.harvestpay.app.data.CustomerEntity
 import com.harvestpay.app.data.FieldEntity
 import com.harvestpay.app.data.WorkEntryEntity
 import com.harvestpay.app.data.WorkTypeEntity
+import com.harvestpay.app.data.appDisplayName
 import com.harvestpay.app.domain.BusinessCalculator
 import com.harvestpay.app.domain.HarvestUiState
 import com.harvestpay.app.ui.components.DateField
 import com.harvestpay.app.ui.components.DecimalField
 import com.harvestpay.app.ui.components.DropdownField
 import com.harvestpay.app.util.formatMoney
+import com.harvestpay.app.util.formatBigha
 import com.harvestpay.app.util.todayEpochDay
 
 @Composable
@@ -52,7 +55,7 @@ fun WorkFormScreen(
     var date by remember { mutableLongStateOf(todayEpochDay()) }
     var size by remember { mutableStateOf("") }
     var rate by remember(settings.defaultRate) { mutableStateOf(settings.defaultRate.toString()) }
-    var rounds by remember { mutableStateOf("1") }
+    var round by remember { mutableDoubleStateOf(1.0) }
     var workTypeName by remember { mutableStateOf("Ploughing") }
     var appliedInitialWorkTypeRate by remember { mutableStateOf(false) }
     var discount by remember { mutableStateOf("") }
@@ -83,8 +86,8 @@ fun WorkFormScreen(
         ?: workTypeOptions.firstOrNull()
     val numericSize = size.toDoubleOrNull() ?: 0.0
     val numericRate = rate.toDoubleOrNull() ?: 0.0
-    val numericRounds = rounds.toDoubleOrNull() ?: 0.0
-    val subtotal = BusinessCalculator.subtotal(numericSize, numericRate, numericRounds)
+    val workDoneBigha = BusinessCalculator.workDoneBigha(numericSize, round)
+    val subtotal = BusinessCalculator.subtotal(numericSize, numericRate, round)
     val finalAmount = BusinessCalculator.finalAmount(
         subtotal,
         discount.toDoubleOrNull() ?: 0.0,
@@ -113,7 +116,7 @@ fun WorkFormScreen(
                 "Customer *",
                 customer,
                 uiState.customers.sortedBy { it.name },
-                { "${it.name} • ${it.mobile}" },
+                { listOf(it.appDisplayName, it.mobile).filter(String::isNotBlank).joinToString(" • ") },
                 {
                     customer = it
                     field = null
@@ -135,7 +138,7 @@ fun WorkFormScreen(
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 DecimalField(size, { size = it }, "Size (Bigha) *", Modifier.weight(1f))
-                DecimalField(rate, { rate = it }, "Rate / Bigha *", Modifier.weight(1f), "₹")
+                DecimalField(rate, { rate = it }, "Rate / Bigha / Round *", Modifier.weight(1f), "₹")
             }
         }
         if (presets.isNotEmpty()) {
@@ -152,7 +155,14 @@ fun WorkFormScreen(
         }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                DecimalField(rounds, { rounds = it }, "Rounds *", Modifier.weight(1f))
+                DropdownField(
+                    "Round *",
+                    round,
+                    BusinessCalculator.supportedRounds,
+                    { formatBigha(it) },
+                    { round = it },
+                    Modifier.weight(1f),
+                )
                 DropdownField(
                     "Work type *",
                     selectedWorkType,
@@ -175,6 +185,7 @@ fun WorkFormScreen(
         item {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SummaryRow("Work done", "${formatBigha(workDoneBigha)} Bigha")
                     SummaryRow("Subtotal", formatMoney(subtotal))
                     SummaryRow("Discount", "− ${formatMoney(discount.toDoubleOrNull() ?: 0.0)}")
                     SummaryRow("Extra charges", "+ ${formatMoney(extras.toDoubleOrNull() ?: 0.0)}")
@@ -225,8 +236,8 @@ fun WorkFormScreen(
                                 workDate = date,
                                 sizeBigha = numericSize,
                                 ratePerBigha = numericRate,
-                                rounds = numericRounds.toInt().coerceAtLeast(1),
-                                roundMultiplier = numericRounds,
+                                rounds = round.toInt().coerceAtLeast(1),
+                                roundMultiplier = round,
                                 workType = workTypeName,
                                 subtotal = subtotal,
                                 discount = discount.toDoubleOrNull() ?: 0.0,
@@ -238,7 +249,7 @@ fun WorkFormScreen(
                             method,
                         )
                     },
-                    enabled = customer != null && numericSize > 0 && numericRate >= 0 && numericRounds > 0,
+                    enabled = customer != null && numericSize > 0 && numericRate >= 0,
                     modifier = Modifier.weight(1f),
                 ) { Text("Save work") }
             }
