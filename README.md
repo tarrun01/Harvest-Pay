@@ -1,6 +1,6 @@
 # Harvest Pay — Agricultural Service Ledger
 
-Harvest Pay is an Android app for tractor and agricultural service owners to manage customers, fields, work, payments and pending balances. **Current version: v1.4.2 (14)**. Developed by Tarun.
+Harvest Pay is an Android app for tractor and agricultural service owners to manage customers, fields, work, payments and pending balances. **Current version: v1.4.3 (15)**. Developed by Tarun.
 
 ## Repository layout
 
@@ -12,17 +12,17 @@ Harvest-Pay/
 
 Open **[HarvestPay-v1.4.2-source](HarvestPay-v1.4.2-source/)** in Android Studio. All application code, Gradle files, resources, schemas, tests and project documentation are inside that folder. Git's hidden metadata is retained locally.
 
-- [What's new in v1.4.2](HarvestPay-v1.4.2-source/README.md)
+- [What's new in v1.4.3](HarvestPay-v1.4.2-source/README.md)
 - [Project guide](HarvestPay-v1.4.2-source/PROJECT_GUIDE.md)
 - [Release history](HarvestPay-v1.4.2-source/CHANGELOG.md)
 - [Build and verification report](HarvestPay-v1.4.2-source/RELEASE_REPORT.md)
 - [GitHub Releases](https://github.com/tarrun01/Harvest-Pay/releases)
 
-The v1.4.2 optimized APK was built and safely tested as an update. Its GitHub release is currently a draft without an APK asset because automated approval blocked the embedded Maps key upload. APKs belong in Releases, not the source tree.
+The v1.4.3 R8-optimized APK was built and installed as a compatible update on the owner’s phone. See the build report for its exact metadata and verification. The older v1.4.2 GitHub release remains a draft without an APK asset because automated approval blocked its embedded Maps key upload. APKs belong in Releases.
 
 ## About the app
 
-Harvest Pay is a local Android ledger for tractor and agricultural service owners. It manages customers, physical fields, Bigha- or minute-based work, receipts, payments, pending balances, historical accounts, diesel purchases and service reminders. Current version: **1.4.2 / code 14**, package `com.harvestpay.app`, Android 6.0/API 23 or newer; compile/target API 36.
+Harvest Pay is a local Android ledger for tractor and agricultural service owners. It manages customers, physical fields, Bigha- or minute-based work, receipts, payments, pending balances, historical accounts, diesel purchases and service reminders. Current version: **1.4.3 / code 15**, package `com.harvestpay.app`, Android 6.0/API 23 or newer; compile/target API 36.
 
 The application works from local storage. Google map imagery and place search require internet and a configured Google Maps project. Financial records are not sent to a custom backend. Local account credentials protect the application's entry flow; the app does not provide cloud account synchronization.
 
@@ -52,7 +52,7 @@ Measured Acres/Bigha are displayed with exactly two decimals. Add Field converts
 
 Work supports physical size × round multiplier × rate, or operating duration × rate according to the work type. Work entries preserve the saved type, rate and billing mode. New Work displays the configured Hindi work-type name in Hindi and the English name in English; missing Hindi names fall back to English. The simplified work form omits rate presets, discount and extra-charge controls and reduces the notes input. Existing stored values and calculation support remain intact.
 
-Payments may be associated with an account/work entry. Account totals distinguish bill, paid, pending and advance. Existing monetary rounding and archive calculations remain unchanged in v1.4.2.
+Payments opens History first and Pending second. Pending customer cards show a compact name/amount header, side-by-side Mark paid and Add partial payment buttons, and Schedule reminder below. Tapping the card opens customer Details; Mark paid retains confirmation. Payments may be associated with an account/work entry. Account totals distinguish bill, paid, pending and advance. Existing monetary rounding and archive calculations remain unchanged in v1.4.2.
 
 ### PDFs and sharing
 
@@ -72,7 +72,7 @@ Text resources live in `res/values/strings.xml` and `res/values-hi/strings.xml`.
 
 Settings retain owner/business values, rates and light/dark/system appearance. Biometric locking and password change retain their existing behavior. Password verification uses the local credential implementation in `security/LocalAuth.kt`; credentials and customer records must not be placed in Git or release notes.
 
-More → About → What's New works offline and shows v1.4.2, v1.4.1, v1.4.0 and the documented v1.2.2 in descending order. One row expands at a time. The badge reads installed package metadata. v1.4.0's missing historical documentation is explicitly disclosed instead of inventing features or dates.
+More → About → What's New works offline and shows v1.4.3, v1.4.2, v1.4.1, v1.4.0 and the documented v1.2.2 in descending order. One row expands at a time. The badge reads installed package metadata. v1.4.0's missing historical documentation is explicitly disclosed instead of inventing features or dates.
 
 ## Architecture and source map
 

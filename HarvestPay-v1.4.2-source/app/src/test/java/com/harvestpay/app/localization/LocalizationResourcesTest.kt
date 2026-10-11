@@ -33,7 +33,7 @@ class LocalizationResourcesTest {
         assertEquals("वर्तमान वर्ज़न", hi["text_current_version"])
         listOf("values", "values-hi").forEach { folder ->
             val xml = File("src/main/res/$folder/strings.xml").readText()
-            listOf("release_notes_142", "release_notes_141", "release_notes_unknown", "release_notes_122").forEach { assertTrue(xml.contains(it)) }
+            listOf("release_notes_143", "release_notes_142", "release_notes_141", "release_notes_unknown", "release_notes_122").forEach { assertTrue(xml.contains(it)) }
         }
     }
 }

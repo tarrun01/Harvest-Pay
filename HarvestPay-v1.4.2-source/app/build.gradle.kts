@@ -21,8 +21,8 @@ android {
         applicationId = "com.harvestpay.app"
         minSdk = 23
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.4.2"
+        versionCode = 15
+        versionName = "1.4.3"
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
         buildConfigField("boolean", "MAPS_CONFIGURED", mapsApiKey.isNotBlank().toString())
 

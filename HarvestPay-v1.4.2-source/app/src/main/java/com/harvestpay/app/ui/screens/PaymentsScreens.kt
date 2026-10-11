@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LocalGasStation
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -32,6 +33,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -50,6 +53,7 @@ import com.harvestpay.app.data.CustomerEntity
 import com.harvestpay.app.data.appDisplayName
 import com.harvestpay.app.data.PaymentEntity
 import com.harvestpay.app.data.ReminderEntity
+import com.harvestpay.app.domain.CustomerSummary
 import com.harvestpay.app.domain.HarvestUiState
 import com.harvestpay.app.ui.components.ConfirmDialog
 import com.harvestpay.app.ui.components.DateField
@@ -110,12 +114,12 @@ fun PaymentsScreen(
     LazyColumn(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             PrimaryScrollableTabRow(selectedTabIndex = tab, modifier = Modifier.padding(top = 10.dp), edgePadding = 0.dp) {
-                listOf("Pending", AppText.text(R.string.text_history), AppText.text(R.string.text_diesel_payments), AppText.text(R.string.text_reminders), AppText.text(R.string.text_advances)).forEachIndexed { index, title ->
+                listOf(AppText.text(R.string.text_history), "Pending", AppText.text(R.string.text_diesel_payments), AppText.text(R.string.text_reminders), AppText.text(R.string.text_advances)).forEachIndexed { index, title ->
                     Tab(selected = tab == index, onClick = { tab = index }, text = { Text(AppText.label(title)) })
                 }
             }
         }
-        if (tab == 0) {
+        if (tab == 1) {
             item {
                 OutlinedTextField(
                     search,
@@ -141,20 +145,15 @@ fun PaymentsScreen(
             }
             if (pending.isEmpty()) item { EmptyState(AppText.text(R.string.text_no_pending_payments), AppText.text(R.string.text_every_recorded_balance_is_settled)) }
             else items(pending, key = { "pending-${it.customer.id}" }) { summary ->
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    PendingCustomerCard(
-                        summary,
-                        onView = { onOpenCustomer(summary.customer.id) },
-                        onAddPayment = { onAddPayment(summary.customer.id) },
-                        onMarkPaid = { onMarkPaid(summary.customer.id) },
-                    )
-                    OutlinedButton(onClick = { onAddReminder(summary.customer.id) }, modifier = Modifier.fillMaxWidth()) {
-                        Icon(Icons.Outlined.NotificationsActive, null)
-                        Text(AppText.text(R.string.text_schedule_reminder))
-                    }
-                }
+                CompactPendingCustomerCard(
+                    summary,
+                    onView = { onOpenCustomer(summary.customer.id) },
+                    onAddPayment = { onAddPayment(summary.customer.id) },
+                    onMarkPaid = { onMarkPaid(summary.customer.id) },
+                    onAddReminder = { onAddReminder(summary.customer.id) },
+                )
             }
-        } else if (tab == 1) {
+        } else if (tab == 0) {
             if (uiState.payments.isEmpty()) item { EmptyState(AppText.text(R.string.text_no_payment_history), AppText.text(R.string.text_payments_will_appear_here_as_they_are_recorded)) }
             else items(uiState.payments.sortedByDescending { it.paymentDate }, key = { "payment-${it.id}" }) { payment ->
                 val customer = uiState.customers.firstOrNull { it.id == payment.customerId }
@@ -277,6 +276,62 @@ fun PaymentsScreen(
     }
     deleteReminder?.let { reminder ->
         ConfirmDialog(AppText.text(R.string.text_delete_reminder), AppText.text(R.string.text_the_scheduled_notification_will_be_cancelled), AppText.text(R.string.text_delete), true, { onDeleteReminder(reminder) }, { deleteReminder = null })
+    }
+}
+
+/** Compact payment queue; the dashboard retains its existing detailed card. */
+@Composable
+private fun CompactPendingCustomerCard(
+    summary: CustomerSummary,
+    onView: () -> Unit,
+    onAddPayment: () -> Unit,
+    onMarkPaid: () -> Unit,
+    onAddReminder: () -> Unit,
+) {
+    var confirmPaid by remember { mutableStateOf(false) }
+    Card(onClick = onView, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    summary.customer.appDisplayName,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    formatMoney(summary.pending),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { confirmPaid = true }, modifier = Modifier.weight(1f)) {
+                    Text(AppText.text(R.string.text_mark_paid))
+                }
+                OutlinedButton(onClick = onAddPayment, modifier = Modifier.weight(1f)) {
+                    Text(AppText.text(R.string.text_add_partial_payment))
+                }
+            }
+            OutlinedButton(onClick = onAddReminder, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.NotificationsActive, contentDescription = null)
+                Text(AppText.text(R.string.text_schedule_reminder))
+            }
+        }
+    }
+    if (confirmPaid) {
+        AlertDialog(
+            onDismissRequest = { confirmPaid = false },
+            title = { Text(AppText.text(R.string.text_mark_complete_balance_paid)) },
+            text = { Text(AppText.text(R.string.text_a_payment_of_1_s_will_be_recorded_today, formatMoney(summary.pending))) },
+            confirmButton = { TextButton(onClick = { onMarkPaid(); confirmPaid = false }) { Text(AppText.text(R.string.text_mark_as_paid)) } },
+            dismissButton = { TextButton(onClick = { confirmPaid = false }) { Text(AppText.text(R.string.text_cancel)) } },
+        )
     }
 }
 

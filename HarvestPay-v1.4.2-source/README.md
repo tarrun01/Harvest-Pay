@@ -1,6 +1,16 @@
-# Harvest Pay v1.4.2 — What's New
+# Harvest Pay v1.4.3 — What's New
 
-**Version:** 1.4.2 · **Version code:** 14 · **Package:** `com.harvestpay.app` · **Android:** 6.0/API 23+
+**Version:** 1.4.3 · **Version code:** 15 · **Package:** `com.harvestpay.app` · **Android:** 6.0/API 23+
+
+## Changes in v1.4.3
+
+- Payments opens **History** first, followed by **Pending**.
+- Pending customer cards are smaller and use the standard card color. They show only the customer name and pending amount.
+- Tap anywhere on the card outside its action buttons to open customer Details.
+- **Mark paid** and **Add partial payment** appear side by side, with **Schedule reminder** directly below.
+- Mark paid still asks for confirmation before recording a full payment. Existing payment, reminder and balance logic is preserved.
+- **More → About → What's New** includes English/Hindi v1.4.3 notes and the installed-version badge.
+- Preview builds retain R8 optimization, obfuscation and resource shrinking with the existing compatible development certificate.
 
 ## Changes in v1.4.2
 
@@ -33,7 +43,7 @@
 - Includes the existing GPS/satellite workflows, map rendering and modern Activity Result fixes for location permissions and backup import/export.
 - Retains compact customers, profile totals directly below Share PDF, pending balance colors, simplified work entry, independent PDF language selection and dashboard search focus.
 
-## Verification
+## v1.4.2 verification
 
 - 12 focused unit tests passed with zero failures.
 - Debug lint: zero errors, 35 warnings; optimized variant vital lint passed.
@@ -60,6 +70,7 @@ Configure Maps through ignored `local.properties` or `MAPS_API_KEY` in the build
 - [Full app details and workflows](../README.md)
 - [Project guide and architecture](PROJECT_GUIDE.md)
 - [Complete changelog](CHANGELOG.md)
-- [Exact APK metadata and verification report](RELEASE_REPORT.md)
+- [Latest APK metadata and verification report](RELEASE_REPORT.md)
+- [v1.4.2 verification report](RELEASE_REPORT_1.4.2.md)
 
 The GitHub v1.4.2 release remains a draft without an APK asset; its upload was blocked by automatic approval review. The tested APK and diagnostics remain available in this local project's ignored build outputs.

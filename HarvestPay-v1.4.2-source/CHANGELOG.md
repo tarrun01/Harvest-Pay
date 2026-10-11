@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.3 — version code 15
+
+- Payments opens History first, with Pending second.
+- Compact neutral pending customer cards show only customer name and pending amount.
+- Tap the card to open Details; Mark paid and Add partial payment are side by side, with Schedule reminder below.
+- Retained full-payment confirmation and existing billing, payment and reminder actions.
+- Added English/Hindi v1.4.3 notes in About → What’s New.
+
 ## 1.4.2 — version code 14
 
 - Work-type selection in Hindi uses the owner-provided Hindi name, with the English name as fallback; stored identifiers and billing remain unchanged.

@@ -764,6 +764,12 @@
     <string name="label_backup_contains_invalid_yearly_archives">Backup contains invalid yearly archives.</string>
     <string name="label_backup_contains_invalid_customer_archive_balances">Backup contains invalid customer archive balances.</string>
     <string name="label_enter_a_positive_conversion_factor">Enter a positive conversion factor.</string>
+    <string-array name="release_notes_143">
+        <item>Payments now opens History first, followed by Pending.</item>
+        <item>Pending customer cards use a compact neutral layout with only the name and pending amount.</item>
+        <item>Tap the customer card to open Details; Mark paid and Add partial payment remain available.</item>
+        <item>Schedule reminder stays directly below the payment buttons; full-payment confirmation is preserved.</item>
+    </string-array>
     <string-array name="release_notes_142">
         <item>Complete native Hindi and English interface, including validation and notifications.</item>
         <item>Language selection in More with immediate, persistent Android per-app locale switching.</item>

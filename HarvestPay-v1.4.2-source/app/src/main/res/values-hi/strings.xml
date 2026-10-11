@@ -764,6 +764,12 @@
     <string name="label_backup_contains_invalid_yearly_archives">बैकअप में साल के पुराने रिकॉर्ड गलत हैं।</string>
     <string name="label_backup_contains_invalid_customer_archive_balances">बैकअप में ग्राहक के पुराने खाते का हिसाब गलत है।</string>
     <string name="label_enter_a_positive_conversion_factor">शून्य से अधिक रूपांतरण मान डालें।</string>
+    <string-array name="release_notes_143">
+        <item>भुगतान सेक्शन में पहले इतिहास और फिर बकाया टैब खुलता है।</item>
+        <item>बकाया ग्राहकों के छोटे, सामान्य रंग वाले कार्ड में केवल नाम और बकाया राशि दिखती है।</item>
+        <item>ग्राहक कार्ड पर टैप करके विवरण खोलें; पूरा भुगतान और आंशिक भुगतान के बटन उपलब्ध हैं।</item>
+        <item>भुगतान बटनों के नीचे रिमाइंडर शेड्यूल करें; पूरा भुगतान दर्ज करने से पहले पुष्टि ली जाती है।</item>
+    </string-array>
     <string-array name="release_notes_142">
         <item>पूरे ऐप, जाँच संदेश और सूचनाओं में हिंदी और अंग्रेज़ी समर्थन।</item>
         <item>अधिक में भाषा चयन; Android की प्रति-ऐप भाषा तुरंत बदलती और सुरक्षित रहती है।</item>

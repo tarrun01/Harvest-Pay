@@ -2,7 +2,7 @@
 
 ## Purpose and current version
 
-Harvest Pay is a local Android ledger for tractor and agricultural service owners. It manages customers, physical fields, Bigha- or minute-based work, receipts, payments, pending balances, historical accounts, diesel purchases and service reminders. Current version: **1.4.2 / code 14**, package `com.harvestpay.app`, Android 6.0/API 23 or newer; compile/target API 36.
+Harvest Pay is a local Android ledger for tractor and agricultural service owners. It manages customers, physical fields, Bigha- or minute-based work, receipts, payments, pending balances, historical accounts, diesel purchases and service reminders. Current version: **1.4.3 / code 15**, package `com.harvestpay.app`, Android 6.0/API 23 or newer; compile/target API 36.
 
 The application works from local storage. Google map imagery and place search require internet and a configured Google Maps project. Financial records are not sent to a custom backend. Local account credentials protect the application's entry flow; the app does not provide cloud account synchronization.
 
@@ -32,7 +32,7 @@ Measured Acres/Bigha are displayed with exactly two decimals. Add Field converts
 
 Work supports physical size × round multiplier × rate, or operating duration × rate according to the work type. Work entries preserve the saved type, rate and billing mode. The simplified work form omits rate presets, discount and extra-charge controls and reduces the notes input. Existing stored values and calculation support remain intact.
 
-Payments may be associated with an account/work entry. Account totals distinguish bill, paid, pending and advance. Existing monetary rounding and archive calculations remain unchanged in v1.4.2.
+Payments opens History first and Pending second. Pending customer cards show a compact name/amount header, side-by-side Mark paid and Add partial payment buttons, and Schedule reminder below. Tapping the card opens customer Details; Mark paid retains confirmation. Payments may be associated with an account/work entry. Account totals distinguish bill, paid, pending and advance. Existing monetary rounding and archive calculations remain unchanged in v1.4.2.
 
 ### PDFs and sharing
 
@@ -52,7 +52,7 @@ Text resources live in `res/values/strings.xml` and `res/values-hi/strings.xml`.
 
 Settings retain owner/business values, rates and light/dark/system appearance. Biometric locking and password change retain their existing behavior. Password verification uses the local credential implementation in `security/LocalAuth.kt`; credentials and customer records must not be placed in Git or release notes.
 
-More → About → What's New works offline and shows v1.4.2, v1.4.1, v1.4.0 and the documented v1.2.2 in descending order. One row expands at a time. The badge reads installed package metadata. v1.4.0's missing historical documentation is explicitly disclosed instead of inventing features or dates.
+More → About → What's New works offline and shows v1.4.3, v1.4.2, v1.4.1, v1.4.0 and the documented v1.2.2 in descending order. One row expands at a time. The badge reads installed package metadata. v1.4.0's missing historical documentation is explicitly disclosed instead of inventing features or dates.
 
 ## Architecture and source map
 

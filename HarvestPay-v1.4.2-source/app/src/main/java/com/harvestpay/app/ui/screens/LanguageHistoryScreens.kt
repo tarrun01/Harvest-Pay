@@ -42,6 +42,7 @@ fun LanguageScreen() {
 /** Local release records: missing historical documentation is stated explicitly. */
 internal data class VersionHistoryEntry(val versionName: String, val displayOrder: Int, val notesResource: Int)
 internal val versionHistory = listOf(
+    VersionHistoryEntry("1.4.3", 4, com.harvestpay.app.R.array.release_notes_143),
     VersionHistoryEntry("1.4.2", 3, com.harvestpay.app.R.array.release_notes_142),
     VersionHistoryEntry("1.4.1", 2, com.harvestpay.app.R.array.release_notes_141),
     VersionHistoryEntry("1.4.0", 1, com.harvestpay.app.R.array.release_notes_unknown),
