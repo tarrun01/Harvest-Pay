@@ -36,8 +36,21 @@ Only Payments presentation, app version/history resources and documentation chan
 
 The source directory name remains `HarvestPay-v1.4.2-source` in the existing repository layout; the Android app version is 1.4.3. Source publication to `main` is authorized. No APK upload to GitHub Releases is part of this update request.
 
-## Remaining device checks
+## Completed action and language checks
 
-Card opening and action routing, Hindi layout/history and final unchanged-ledger comparison are pending while the owner is using the phone. No payment or reminder was created during checks.
+- Neutral compact cards were visually inspected in English and Hindi. Both pending customers fit on the screen; long partial-payment labels wrap without clipping.
+- Mark paid opened the correct balance confirmation; it was cancelled without recording payment.
+- Add partial payment opened the existing form with the correct customer and pending balance; it was closed without saving.
+- Schedule reminder opened the correct customer’s existing reminder form; it was cancelled without scheduling.
+- Tapping the customer card’s name opened that customer’s Details. Nested action buttons invoked their own actions rather than the card’s Details action.
+- More → About showed Version 1.4.3. Expanded notes and Current Version badge were verified in English and Hindi; older history entries remained ordered below.
+- Dashboard customer/work/field counts and current-account totals matched the pre-update snapshot after installation. No payment or reminder was created during testing.
+- The inspected current app process had no AndroidRuntime crash or authorization errors. The original English locale was restored after Hindi checks.
+
+## Publication and limitations
+
+Implementation commit `b818de5fb0e97e9988f72ad058c8ff945f3874b2` was pushed to GitHub main. This follow-up report records the completed manual checks.
+
+The APK remains development-signed as authorized by the owner. No automated device suite that may uninstall the populated app was run. Actual payment recording and reminder scheduling were not performed against real customer records; existing callback/confirmation/persistence code is retained.
 
 Prior v1.4.2 verification is preserved in [RELEASE_REPORT_1.4.2.md](RELEASE_REPORT_1.4.2.md).

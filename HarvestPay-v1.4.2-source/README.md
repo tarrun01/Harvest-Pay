@@ -43,6 +43,13 @@
 - Includes the existing GPS/satellite workflows, map rendering and modern Activity Result fixes for location permissions and backup import/export.
 - Retains compact customers, profile totals directly below Share PDF, pending balance colors, simplified work entry, independent PDF language selection and dashboard search focus.
 
+## v1.4.3 verification
+
+- 2 localization/resource tests passed; R8 build and optimized-variant vital lint passed.
+- Compatible update installed on Samsung A34 / Android 16, preserving ledger data.
+- History-first navigation, compact cards and action routes were checked on the optimized APK; confirmation and payment/reminder forms were cancelled without saving.
+- About version, v1.4.3 notes/current badge and card layout were checked in English and Hindi.
+
 ## v1.4.2 verification
 
 - 12 focused unit tests passed with zero failures.
