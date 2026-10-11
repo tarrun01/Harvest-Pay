@@ -10,6 +10,9 @@ object AppText {
     private var quantityResolver: ((Int, Int, Array<out Any?>) -> String)? = null
     fun quantity(id: Int, count: Int, vararg arguments: Any?): String =
         requireNotNull(quantityResolver)(id, count, arguments)
+    /** Choose the owner-provided name without changing the canonical stored identifier. */
+    fun bilingualName(english: String, hindi: String): String =
+        if (java.util.Locale.getDefault().language == "hi" && hindi.isNotBlank()) hindi else english
     fun label(value: String): String = StableLabels.display(value)
     fun initialize(context: Context) {
         quantityResolver = { id, count, arguments ->

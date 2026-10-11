@@ -32,6 +32,7 @@ import java.util.Locale
 
 private fun Double.display() = MeasurementFormatting.display(this)
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MeasurementScreen(settings: AppSettings, onAssign: () -> Unit, onClose: () -> Unit) {
     val context=LocalContext.current
@@ -135,7 +136,7 @@ fun MeasurementScreen(settings: AppSettings, onAssign: () -> Unit, onClose: () -
         Column(Modifier.padding(12.dp),verticalArrangement=Arrangement.spacedBy(4.dp)) {
             if(d.stage==MeasurementStage.MEASURING) {
                 if(d.method==MeasurementMethod.SATELLITE) {
-                    Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                    FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick={store.undo()},enabled=d.undo.isNotEmpty()) { Text(AppText.text(R.string.text_undo)) }
                         TextButton(onClick={store.edit(emptyList())},enabled=d.points.isNotEmpty()) { Text(AppText.text(R.string.text_clear)) }
                         TextButton(onClick={locateSatellite=true; if(!fine) requestLocation() else if(!locationEnabled) message=AppText.text(R.string.text_enable_device_location_to_use_this_shortcut)}) { Text(AppText.text(R.string.text_my_location)) }

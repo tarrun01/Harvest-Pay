@@ -4,6 +4,8 @@ Harvest Pay is an offline-first Android ledger for a tractor owner who charges f
 
 ## What's New — v1.4.2
 
+- Work-type selection in Hindi uses the owner-provided Hindi name, with the English name as fallback; stored identifiers and billing remain unchanged.
+
 - Added native English and Hindi resources throughout screens, dialogs, validation, accessibility labels, sharing messages and notification text.
 - Added **More → Language / भाषा** with immediate Android per-app locale switching and persistent selection. English remains the default when no preference exists; Android 13+ system app-language settings use the same preference.
 - Added **More → About → What's New**, an offline, expandable English/Hindi version history. One release expands at a time; the current-version badge reads installed package metadata. Undocumented v1.4.0 notes are explicitly marked unavailable.

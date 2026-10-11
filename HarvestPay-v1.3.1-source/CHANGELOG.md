@@ -2,6 +2,8 @@
 
 ## 1.4.2 — version code 14
 
+- Work-type selection in Hindi uses the owner-provided Hindi name, with the English name as fallback; stored identifiers and billing remain unchanged.
+
 - Native English/Hindi resources across application screens, dialogs, validation, accessibility and notifications.
 - Immediate, persistent language selection in More using Android/AppCompat per-app locale APIs.
 - Offline expandable English/Hindi version history in About, with a badge based on installed metadata.

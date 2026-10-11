@@ -14,7 +14,7 @@ GPS/satellite, review, completion and saved-boundary measured area displays use 
 | --- | --- |
 | Filename | `HarvestPay-v1.4.2-optimized.apk` |
 | Absolute path | `/home/tarun/Code-PlayGround/Harvest-Pay/HarvestPay-v1.3.1-source/app/build/outputs/apk/preview/HarvestPay-v1.4.2-optimized.apk` |
-| Size | 4,881,460 bytes / approximately 4.66 MiB |
+| Size | 4,881,459 bytes / approximately 4.66 MiB |
 | Package | `com.harvestpay.app` |
 | Version | 1.4.2 / versionCode 14 |
 | Variant | `preview`, inheriting release optimization |
@@ -23,7 +23,7 @@ GPS/satellite, review, completion and saved-boundary measured area displays use 
 | Signing | Existing Android development certificate; expressly authorized by owner; no production keystore supplied |
 | Signature verification | APK v1 and v2 verified |
 | Certificate SHA-256 | `611b7528e2e558021aeebf2a8cb82477f239fcb53c8ebe05e743acafe9c3d95d` |
-| APK SHA-256 | `2c208985f9cf93af77f381a826be7660b1c8cf6e076f938b9370dbbb13a336c4` |
+| APK SHA-256 | `9c037964d91c3584aadc4d54efa38de2b178d07ae7d5a7bac7690ec70c5e208a` |
 
 Mapping preserved at `app/build/outputs/release-diagnostics/v1.4.2/mapping.txt`; exact artifact metadata and checksum are alongside it. Generated APKs/mapping/build outputs are excluded from the source commit.
 
@@ -32,19 +32,28 @@ Mapping preserved at `app/build/outputs/release-diagnostics/v1.4.2/mapping.txt`;
 - Final `testDebugUnitTest` focused suite: **12 passed**, zero failures/errors: MeasurementFormattingTest (4), LocalizationResourcesTest (2), DashboardInsightDataTest (4), DashboardGreetingTest (1), ShareUtilsTest (1).
 - Covers HALF_UP ties, two decimal formatting, full-precision conversion, very small positive measurement handling, resource parity/placeholders, critical Hindi labels and release arrays, preserved dashboard summaries and payment-share content.
 - Final `lintDebug`: **zero errors**, 35 warnings and 3 hints. Remaining findings concern available dependency/plugin upgrades, deprecated/style APIs and unused resources/attributes; they are not presented as zero warnings.
-- `assemblePreview` and preview vital lint succeeded. Final build completed in 3 minutes 34 seconds; R8 minification/resource shrinking tasks executed.
+- `assemblePreview` and preview vital lint succeeded. The final work-type correction build completed in 3 minutes 14 seconds; R8 minification/resource shrinking tasks executed.
 - Samsung **SM-A346E / Android 16**, wireless identifier `adb-RZCWA2HEL3T-zWLkus._adb-tls-connect._tcp`: `adb install -r` succeeded without uninstalling or clearing data. Signature compatibility was enforced by Android's update installation.
 - Cold launch succeeded (696 ms reported by Activity Manager). Native Hindi selection succeeded; framework app locales reported `[hi]`. Hindi persisted after force-stop/cold restart (300 ms launch).
 - Dashboard customer/work counts and monetary totals matched the pre-update snapshot. User-entered owner/customer values were retained. The Hindi dashboard was visually inspected; text wrapped without observed overlap.
 
-## Device checks still in progress
+## Additional device checks completed
 
-Wireless debugging stopped responding after the successful update and Hindi restart. Remaining manual checks of expanded history, measurement transfer, translated customer/work/payment/settings screens and backup pickers are awaiting the restored connection. They are not yet claimed as tested on v1.4.2. Prior v1.4.1 device/crash verification is separately recorded in README and is not counted as new v1.4.2 testing.
+- The final corrected APK installed successfully as an update and cold-launched in 292 ms. Hindi remained selected across the update.
+- Hindi satellite action buttons were visually checked on the final APK; long labels and Search fit without narrow clipping.
+- New Work showed the owner-provided Hindi names in both its selection and dropdown: हैरो, धान सफाई मशीन, रोटावेटर, पानी में रोटावेटर and टिलर. The existing rate remained unchanged. Android's system app-locale switch to English immediately showed Harrow on the same form. Canonical work-type identifiers and billing calculations are unchanged.
+- Satellite imagery loaded, a temporary three-point boundary produced an area, and review displayed Acres/Bigha with two decimals. Add Field displayed an editable Bigha value calculated from raw square meters, confirming that rounded Acres were not used for conversion. No field was saved.
+- GPS entry and Start succeeded, a 2.50-meter-accuracy fix was accepted, and the recording draft was cancelled and discarded. No saved field was created.
+- Hindi history order/current badge, one-section expansion, collapse and the missing v1.4.0 notes were checked. Hindi customer, profile, payments and settings screens were inspected.
+- Profile PDF report selection excluded the duplicate Outstanding option; English/Hindi/Both output choices remained available while the UI was Hindi. The chooser was cancelled; PDF pages were not newly rendered for visual QA in this phase.
+- Export opened Android's Create Document picker and Import opened its Open Document picker without a crash. Both were cancelled without exporting or restoring ledger data.
+- The final app process had no AndroidRuntime or Maps authorization errors in the inspected log. The original English preference was restored after the language checks.
+- Customer/work/field counts and current-account totals remained unchanged through the checks. User-entered names and settings were preserved. Prior v1.4.1 device/crash verification remains separately recorded in README.
 
 ## Practical limitations
 
 - This optimized APK is development-signed, not production-signed.
-- Actual outdoor GPS walking accuracy has not been verified. The geodesic calculation and rounding are covered by focused tests; previous GPS entry/filters were verified separately.
+- Actual outdoor GPS walking accuracy has not been verified. The geodesic calculation and rounding are covered by focused tests; an indoor GPS fix and Start/cancellation were verified on this release.
 - Android 6–12 AppCompat locale persistence has not been physically tested on an older device.
 - Offline history is implemented solely from packaged arrays; the phone's network was not disabled because wireless ADB needs it.
 - No full device test run was used on the populated owner phone because test tooling can uninstall the real app. No customer, field, work entry or payment was saved for these UI checks.
@@ -53,7 +62,7 @@ Wireless debugging stopped responding after the successful update and Hindi rest
 
 The local branch is `main`. The source directory was previously entirely untracked; this release commit brings the complete current source into Git, including earlier requested functionality. The repository root README now points to the current project and detailed documentation. Existing deletions under the older v1.2.2 directory and the unrelated parent APK are preserved and excluded from staging. The working tree therefore retains those pre-existing changes.
 
-Source publication requires separate authorization under the supplied release instructions. The APK upload to GitHub Releases is authorized. The final response reports the exact commit hash, publication result and remaining working-tree state.
+The owner separately authorized pushing source and publishing the Maps-enabled APK, including its embedded Android Maps key. The release target is `main` in `tarrun01/Harvest-Pay`; release URL: https://github.com/tarrun01/Harvest-Pay/releases/tag/v1.4.2. The final response reports the exact pushed commit and publication result. Existing unrelated changes remain unstaged.
 
 ## Relevant new/updated v1.4.2 files
 
