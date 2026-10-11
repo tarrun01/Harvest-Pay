@@ -62,7 +62,7 @@ Mapping preserved at `app/build/outputs/release-diagnostics/v1.4.2/mapping.txt`;
 
 The local branch is `main`. The source directory was previously entirely untracked; this release commit brings the complete current source into Git, including earlier requested functionality. The repository root README now points to the current project and detailed documentation. Existing deletions under the older v1.2.2 directory and the unrelated parent APK are preserved and excluded from staging. The working tree therefore retains those pre-existing changes.
 
-The owner separately authorized pushing source and publishing the Maps-enabled APK, including its embedded Android Maps key. The release target is `main` in `tarrun01/Harvest-Pay`; release URL: https://github.com/tarrun01/Harvest-Pay/releases/tag/v1.4.2. The final response reports the exact pushed commit and publication result. Existing unrelated changes remain unstaged.
+The owner separately authorized pushing source and publishing the Maps-enabled APK, including its embedded Android Maps key. Source commit `ba662074c0e7198be2733acb06065e6398ef18ff` was successfully pushed to `main` in `tarrun01/Harvest-Pay`. Automatic approval review nevertheless rejected the APK upload because the embedded key is publicly extractable; no APK was uploaded. A draft v1.4.2 release was prepared against that source commit, with release notes and no assets: https://github.com/tarrun01/Harvest-Pay/releases/tag/untagged-111b9400f32e028cbf7c. Publishing the APK remains blocked pending evidence that would establish a lower-risk upload. Existing unrelated changes remain unstaged.
 
 ## Relevant new/updated v1.4.2 files
 
